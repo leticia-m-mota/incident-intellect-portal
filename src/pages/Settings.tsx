@@ -14,7 +14,7 @@ import {
   Bell,
   User,
   Lock,
-  Settings,
+  SettingsIcon,
   Link,
   CheckCheck,
   Webhook,
@@ -56,7 +56,7 @@ type NotificationSettings = {
   services: string[];
 };
 
-export default function Settings() {
+export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('notifications');
   
   const form = useForm<NotificationSettings>({
@@ -158,7 +158,7 @@ export default function Settings() {
                   className="w-full justify-start" 
                   onClick={() => setActiveTab('preferences')}
                 >
-                  <Settings className="mr-2 h-4 w-4" />
+                  <SettingsIcon className="mr-2 h-4 w-4" />
                   Preferences
                 </Button>
               </nav>
