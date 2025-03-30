@@ -14,11 +14,13 @@ import {
   Bell,
   User,
   Lock,
-  SettingsIcon,
+  Settings as SettingsIcon,
   Link,
   CheckCheck,
   Webhook,
   MessageSquare,
+  Search,
+  Smartphone,
 } from 'lucide-react';
 import {
   Form,
@@ -34,6 +36,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -41,11 +44,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { toast } from '@/hooks/use-toast';
+import { IncidentStatus, SeverityLevel } from '@/lib/types';
 
 type NotificationSettings = {
   emailNotifications: boolean;
   slackNotifications: boolean;
   smsNotifications: boolean;
+  inAppNotifications: boolean;
+  opsgenieNotifications: boolean;
   newIncidents: boolean;
   incidentUpdates: boolean;
   incidentResolved: boolean;
@@ -54,34 +61,62 @@ type NotificationSettings = {
   severityLevels: string[];
   teams: string[];
   services: string[];
+  responsibleTeams: string[];
+  impactedTeams: string[];
+  incidentTypes: string[];
+  businessUnits: string[];
+  keywords: string[];
 };
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('notifications');
+  const [keyword, setKeyword] = useState('');
   
   const form = useForm<NotificationSettings>({
     defaultValues: {
       emailNotifications: true,
       slackNotifications: true,
       smsNotifications: false,
+      inAppNotifications: true,
+      opsgenieNotifications: false,
       newIncidents: true,
       incidentUpdates: true,
       incidentResolved: true,
       mentionsOnly: false,
       dailyDigest: true,
-      severityLevels: ['sev1', 'sev2'],
+      severityLevels: ['critical', 'high'],
       teams: ['platform', 'frontend'],
-      services: ['api-gateway', 'auth-service']
+      services: ['api-gateway', 'auth-service'],
+      responsibleTeams: ['BU1 - Team 1'],
+      impactedTeams: ['BU1 - Team 2'],
+      incidentTypes: ['Data Platform', 'Security'],
+      businessUnits: ['Business Unity 1'],
+      keywords: ['urgent', 'outage'],
     },
   });
 
   const onSubmit = (data: NotificationSettings) => {
     console.log(data);
     // Save notification settings
+    toast({
+      title: "Settings Saved",
+      description: "Your notification preferences have been updated",
+    });
+  };
+
+  const addKeyword = () => {
+    if (keyword.trim() && !form.getValues().keywords.includes(keyword.trim())) {
+      const updatedKeywords = [...form.getValues().keywords, keyword.trim()];
+      form.setValue('keywords', updatedKeywords);
+      setKeyword('');
+    }
   };
 
   // Mock data for selections
   const teams = [
+    { id: 'BU1 - Team 1', name: 'BU1 - Team 1' },
+    { id: 'BU1 - Team 2', name: 'BU1 - Team 2' },
+    { id: 'BU2 - Team 4', name: 'BU2 - Team 4' },
     { id: 'platform', name: 'Platform Team' },
     { id: 'frontend', name: 'Frontend Team' },
     { id: 'backend', name: 'Backend Team' },
@@ -102,11 +137,24 @@ export default function SettingsPage() {
   ];
 
   const severityLevels = [
-    { id: 'sev1', name: 'SEV1 - Critical' },
-    { id: 'sev2', name: 'SEV2 - High' },
-    { id: 'sev3', name: 'SEV3 - Medium' },
-    { id: 'sev4', name: 'SEV4 - Low' },
-    { id: 'sev5', name: 'SEV5 - Informational' },
+    { id: 'critical', name: 'Critical' },
+    { id: 'high', name: 'High' },
+    { id: 'medium', name: 'Medium' },
+    { id: 'low', name: 'Low' },
+  ];
+
+  const incidentTypes = [
+    { id: 'Dataset', name: 'Dataset' },
+    { id: 'Data Platform', name: 'Data Platform' },
+    { id: 'Data Model', name: 'Data Model' },
+    { id: 'Fraud', name: 'Fraud' },
+    { id: 'Engineering', name: 'Engineering' },
+    { id: 'Security', name: 'Security' },
+  ];
+
+  const businessUnits = [
+    { id: 'Business Unity 1', name: 'Business Unity 1' },
+    { id: 'BU 2', name: 'BU 2' },
   ];
 
   return (
@@ -212,6 +260,46 @@ export default function SettingsPage() {
                                   <FormLabel className="text-base">Slack Notifications</FormLabel>
                                   <FormDescription>
                                     Receive notifications via Slack
+                                  </FormDescription>
+                                </div>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="inAppNotifications"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-center justify-between p-3 border rounded-lg">
+                                <div className="space-y-0.5">
+                                  <FormLabel className="text-base">In-App Notifications</FormLabel>
+                                  <FormDescription>
+                                    Receive notifications within the application
+                                  </FormDescription>
+                                </div>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="opsgenieNotifications"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-center justify-between p-3 border rounded-lg">
+                                <div className="space-y-0.5">
+                                  <FormLabel className="text-base">Opsgenie Notifications</FormLabel>
+                                  <FormDescription>
+                                    Receive notifications via Opsgenie
                                   </FormDescription>
                                 </div>
                                 <FormControl>
@@ -418,6 +506,106 @@ export default function SettingsPage() {
 
                           <FormField
                             control={form.control}
+                            name="incidentTypes"
+                            render={() => (
+                              <FormItem>
+                                <div className="mb-4">
+                                  <FormLabel className="text-base">Incident Types</FormLabel>
+                                  <FormDescription>
+                                    Select which types of incidents you want to be notified about
+                                  </FormDescription>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                  {incidentTypes.map((type) => (
+                                    <FormField
+                                      key={type.id}
+                                      control={form.control}
+                                      name="incidentTypes"
+                                      render={({ field }) => {
+                                        return (
+                                          <FormItem
+                                            key={type.id}
+                                            className="flex flex-row items-start space-x-3 space-y-0"
+                                          >
+                                            <FormControl>
+                                              <Checkbox
+                                                checked={field.value?.includes(type.id)}
+                                                onCheckedChange={(checked) => {
+                                                  return checked
+                                                    ? field.onChange([...field.value, type.id])
+                                                    : field.onChange(
+                                                        field.value?.filter(
+                                                          (value) => value !== type.id
+                                                        )
+                                                      )
+                                                }}
+                                              />
+                                            </FormControl>
+                                            <FormLabel className="font-normal">
+                                              {type.name}
+                                            </FormLabel>
+                                          </FormItem>
+                                        )
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="businessUnits"
+                            render={() => (
+                              <FormItem>
+                                <div className="mb-4">
+                                  <FormLabel className="text-base">Business Units</FormLabel>
+                                  <FormDescription>
+                                    Select which business units you want to be notified about
+                                  </FormDescription>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                  {businessUnits.map((unit) => (
+                                    <FormField
+                                      key={unit.id}
+                                      control={form.control}
+                                      name="businessUnits"
+                                      render={({ field }) => {
+                                        return (
+                                          <FormItem
+                                            key={unit.id}
+                                            className="flex flex-row items-start space-x-3 space-y-0"
+                                          >
+                                            <FormControl>
+                                              <Checkbox
+                                                checked={field.value?.includes(unit.id)}
+                                                onCheckedChange={(checked) => {
+                                                  return checked
+                                                    ? field.onChange([...field.value, unit.id])
+                                                    : field.onChange(
+                                                        field.value?.filter(
+                                                          (value) => value !== unit.id
+                                                        )
+                                                      )
+                                                }}
+                                              />
+                                            </FormControl>
+                                            <FormLabel className="font-normal">
+                                              {unit.name}
+                                            </FormLabel>
+                                          </FormItem>
+                                        )
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
                             name="teams"
                             render={({ field }) => (
                               <FormItem>
@@ -435,6 +623,114 @@ export default function SettingsPage() {
                                   >
                                     <SelectTrigger>
                                       <SelectValue placeholder="Select team" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {teams
+                                        .filter(team => !field.value.includes(team.id))
+                                        .map(team => (
+                                          <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
+                                        ))
+                                      }
+                                    </SelectContent>
+                                  </Select>
+                                  <div className="flex flex-wrap gap-2 mt-3">
+                                    {field.value.map(teamId => {
+                                      const team = teams.find(t => t.id === teamId);
+                                      return (
+                                        <Badge key={teamId} variant="secondary" className="flex items-center gap-1">
+                                          {team?.name}
+                                          <Button 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            className="h-4 w-4 p-0 ml-1" 
+                                            onClick={() => {
+                                              field.onChange(field.value.filter(id => id !== teamId));
+                                            }}
+                                          >
+                                            <span>×</span>
+                                          </Button>
+                                        </Badge>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="responsibleTeams"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Responsible Teams</FormLabel>
+                                <FormDescription>
+                                  Be notified when these teams are responsible for incidents
+                                </FormDescription>
+                                <div className="mt-2">
+                                  <Select
+                                    onValueChange={(value) => {
+                                      if (value && !field.value.includes(value)) {
+                                        field.onChange([...field.value, value]);
+                                      }
+                                    }}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select responsible team" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {teams
+                                        .filter(team => !field.value.includes(team.id))
+                                        .map(team => (
+                                          <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
+                                        ))
+                                      }
+                                    </SelectContent>
+                                  </Select>
+                                  <div className="flex flex-wrap gap-2 mt-3">
+                                    {field.value.map(teamId => {
+                                      const team = teams.find(t => t.id === teamId);
+                                      return (
+                                        <Badge key={teamId} variant="secondary" className="flex items-center gap-1">
+                                          {team?.name}
+                                          <Button 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            className="h-4 w-4 p-0 ml-1" 
+                                            onClick={() => {
+                                              field.onChange(field.value.filter(id => id !== teamId));
+                                            }}
+                                          >
+                                            <span>×</span>
+                                          </Button>
+                                        </Badge>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="impactedTeams"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Impacted Teams</FormLabel>
+                                <FormDescription>
+                                  Be notified when these teams are impacted by incidents
+                                </FormDescription>
+                                <div className="mt-2">
+                                  <Select
+                                    onValueChange={(value) => {
+                                      if (value && !field.value.includes(value)) {
+                                        field.onChange([...field.value, value]);
+                                      }
+                                    }}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select impacted team" />
                                     </SelectTrigger>
                                     <SelectContent>
                                       {teams
@@ -519,6 +815,52 @@ export default function SettingsPage() {
                                       );
                                     })}
                                   </div>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="keywords"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Keywords</FormLabel>
+                                <FormDescription>
+                                  Be notified when these keywords appear in incident descriptions or labels
+                                </FormDescription>
+                                <div className="mt-2 flex gap-2">
+                                  <Input 
+                                    value={keyword} 
+                                    onChange={(e) => setKeyword(e.target.value)}
+                                    placeholder="Enter keyword"
+                                    className="flex-1"
+                                  />
+                                  <Button 
+                                    type="button" 
+                                    onClick={addKeyword} 
+                                    variant="secondary"
+                                  >
+                                    <Search className="h-4 w-4 mr-2" />
+                                    Add
+                                  </Button>
+                                </div>
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                  {field.value.map(kw => (
+                                    <Badge key={kw} variant="secondary" className="flex items-center gap-1">
+                                      {kw}
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        className="h-4 w-4 p-0 ml-1" 
+                                        onClick={() => {
+                                          field.onChange(field.value.filter(k => k !== kw));
+                                        }}
+                                      >
+                                        <span>×</span>
+                                      </Button>
+                                    </Badge>
+                                  ))}
                                 </div>
                               </FormItem>
                             )}
