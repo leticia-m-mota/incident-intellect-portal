@@ -130,8 +130,8 @@ export default function Knowledge() {
     <MainLayout>
       <div>
         <PageTitle 
-          title="Knowledge Base" 
-          description="Access playbooks, documentation, and AI assistance for incident management" 
+          title="AI Assistance" 
+          description="Access AI assistance, playbooks, and documentation for incident management" 
         />
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">

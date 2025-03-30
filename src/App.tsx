@@ -11,7 +11,7 @@ import Incidents from "./pages/Incidents";
 import IncidentDetail from "./pages/IncidentDetail";
 import Notifications from "./pages/Notifications";
 import Knowledge from "./pages/Knowledge";
-import Settings from "./pages/Settings";
+import SettingsPage from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,7 +30,7 @@ const App = () => (
           <Route path="/incidents/:id" element={<IncidentDetail />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/knowledge" element={<Knowledge />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/settings" element={<SettingsPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

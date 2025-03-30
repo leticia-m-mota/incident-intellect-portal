@@ -40,11 +40,6 @@ export function AppSidebar() {
       path: '/',
     },
     {
-      title: 'Executive Dashboard',
-      icon: BarChart3,
-      path: '/dashboard',
-    },
-    {
       title: 'Analytics & Metrics',
       icon: Layers,
       path: '/analytics',
@@ -63,12 +58,7 @@ export function AppSidebar() {
 
   const supportMenuItems = [
     {
-      title: 'Knowledge Base',
-      icon: Book,
-      path: '/knowledge',
-    },
-    {
-      title: 'AI Assistant',
+      title: 'AI Assistance',
       icon: Brain,
       path: '/knowledge',
     },
