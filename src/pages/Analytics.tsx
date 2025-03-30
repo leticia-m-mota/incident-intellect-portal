@@ -9,7 +9,8 @@ import {
   BarChart,
   TrendingUp,
   Filter,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Download
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PageTitle } from '@/components/common/PageTitle';
@@ -37,6 +38,7 @@ import { mockDataService } from '@/lib/mockData';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { toast } from '@/components/ui/use-toast';
 
 export default function Analytics() {
   // Data filters
@@ -77,29 +79,25 @@ export default function Analytics() {
   // Mock data for charts and filters
   const businessUnits = [
     { label: 'All Business Units', value: 'all' },
-    { label: 'Commerce', value: 'commerce' },
-    { label: 'Payments', value: 'payments' },
-    { label: 'Logistics', value: 'logistics' },
-    { label: 'Customer Service', value: 'customer-service' },
+    { label: 'Business Unit 1', value: 'bu1' },
+    { label: 'Business Unit 2', value: 'bu2' },
   ];
   
   const teams = [
     { label: 'All Teams', value: 'all' },
-    { label: 'Frontend', value: 'frontend' },
-    { label: 'Backend', value: 'backend' },
-    { label: 'Infrastructure', value: 'infrastructure' },
-    { label: 'Data', value: 'data' },
-    { label: 'DevOps', value: 'devops' },
-    { label: 'SRE', value: 'sre' },
+    { label: 'BU1 - Team 1', value: 'bu1-team1' },
+    { label: 'BU1 - Team 2', value: 'bu1-team2' },
+    { label: 'BU2 - Team 4', value: 'bu2-team4' },
   ];
   
   const incidentTypes = [
     { label: 'All Types', value: 'all' },
-    { label: 'Engineering', value: 'engineering' },
-    { label: 'Data', value: 'data' },
+    { label: 'Dataset', value: 'dataset' },
+    { label: 'Data Platform', value: 'data-platform' },
+    { label: 'Data Model', value: 'data-model' },
     { label: 'Fraud', value: 'fraud' },
+    { label: 'Engineering', value: 'engineering' },
     { label: 'Security', value: 'security' },
-    { label: 'Performance', value: 'performance' },
   ];
   
   const timeFrames = [
@@ -180,6 +178,16 @@ export default function Analytics() {
     if (severityRange[0] !== 1 || severityRange[1] !== 5) count++;
     return count;
   };
+
+  // Export data to CSV
+  const exportToCSV = () => {
+    // In a real application, this would generate a CSV file with the filtered data
+    // For this example, we'll just show a toast message
+    toast({
+      title: "Export Started",
+      description: "Your analytics data is being exported to CSV format",
+    });
+  };
   
   return (
     <MainLayout>
@@ -242,6 +250,15 @@ export default function Analytics() {
               {getActiveFiltersCount() > 0 && (
                 <Badge variant="secondary" className="ml-1">{getActiveFiltersCount()}</Badge>
               )}
+            </Button>
+
+            <Button 
+              variant="outline"
+              className="gap-2"
+              onClick={exportToCSV}
+            >
+              <Download size={16} />
+              <span>Export</span>
             </Button>
           </div>
         </div>
