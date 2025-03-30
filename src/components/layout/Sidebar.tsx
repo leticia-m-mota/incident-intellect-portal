@@ -70,7 +70,7 @@ export function AppSidebar() {
     {
       title: 'AI Assistant',
       icon: Brain,
-      path: '/ai-assistant',
+      path: '/knowledge',
     },
     {
       title: 'User Management',
@@ -85,6 +85,9 @@ export function AppSidebar() {
   ];
 
   const isActive = (path: string) => {
+    if (path === '/knowledge' && location.pathname === '/knowledge') {
+      return true;
+    }
     return location.pathname === path;
   };
 

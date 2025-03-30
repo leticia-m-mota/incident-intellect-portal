@@ -1,226 +1,278 @@
 
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { 
-  BookOpen, 
-  Search, 
-  Tag, 
-  FileText, 
-  Plus,
-  Clock,
-  User,
-  Filter
-} from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PageTitle } from '@/components/common/PageTitle';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
-import { mockDataService } from '@/lib/mockData';
-import { format } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { AiAssistant } from '@/components/ai/AiAssistant';
+import { Search, Book, Filter, Calendar, Tag, User, Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+
+// Sample knowledge articles
+const articles = [
+  {
+    id: '1',
+    title: 'API Gateway Troubleshooting Guide',
+    description: 'A comprehensive guide to diagnosing and resolving common API Gateway issues.',
+    tags: ['api', 'gateway', 'troubleshooting'],
+    author: 'Alex Chen',
+    date: '2023-10-15',
+    views: 243,
+  },
+  {
+    id: '2',
+    title: 'Database Failover Procedures',
+    description: 'Step-by-step guide for handling database failovers with minimal service disruption.',
+    tags: ['database', 'failover', 'high-availability'],
+    author: 'Maya Patel',
+    date: '2023-09-28',
+    views: 187,
+  },
+  {
+    id: '3',
+    title: 'Payment Service SEV1 Incident Response',
+    description: 'Response playbook for critical incidents affecting the payment processing service.',
+    tags: ['payment', 'sev1', 'incident-response'],
+    author: 'Sam Wilson',
+    date: '2023-10-03',
+    views: 326,
+  },
+  {
+    id: '4',
+    title: 'Authentication System Outage Mitigation',
+    description: 'Strategies and procedures for mitigating authentication service outages.',
+    tags: ['authentication', 'outage', 'mitigation'],
+    author: 'Jordan Lee',
+    date: '2023-09-12',
+    views: 154,
+  },
+  {
+    id: '5',
+    title: 'Incident Postmortem Template',
+    description: 'Standardized template for conducting effective incident postmortems.',
+    tags: ['postmortem', 'template', 'incident-management'],
+    author: 'Taylor Kim',
+    date: '2023-08-30',
+    views: 412,
+  },
+  {
+    id: '6',
+    title: 'Infrastructure Scaling Playbook',
+    description: 'Procedures for emergency scaling of infrastructure during traffic spikes.',
+    tags: ['infrastructure', 'scaling', 'emergency-response'],
+    author: 'Morgan Smith',
+    date: '2023-10-10',
+    views: 198,
+  },
+];
+
+// Sample playbooks
+const playbooks = [
+  {
+    id: '1',
+    title: 'API Gateway Outage Response',
+    description: 'Step-by-step response plan for API Gateway outages.',
+    team: 'Platform',
+    lastUpdated: '2023-10-12',
+  },
+  {
+    id: '2',
+    title: 'Database Performance Degradation',
+    description: 'Response procedures for database performance issues.',
+    team: 'Database',
+    lastUpdated: '2023-09-24',
+  },
+  {
+    id: '3',
+    title: 'Payment Processing Failures',
+    description: 'Troubleshooting steps for payment processing errors.',
+    team: 'Payments',
+    lastUpdated: '2023-10-05',
+  },
+  {
+    id: '4',
+    title: 'User Authentication Failures',
+    description: 'Response plan for authentication service issues.',
+    team: 'Identity',
+    lastUpdated: '2023-09-18',
+  },
+  {
+    id: '5',
+    title: 'CDN Service Disruption',
+    description: 'Procedures for handling CDN outages or performance issues.',
+    team: 'Frontend',
+    lastUpdated: '2023-10-01',
+  },
+];
 
 export default function Knowledge() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('assistant');
   
-  const { data: articles, isLoading } = useQuery({
-    queryKey: ['knowledgeArticles'],
-    queryFn: mockDataService.getKnowledgeArticles,
-  });
-  
-  const filteredArticles = articles?.filter(article =>
-    article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    article.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+  // Filter articles based on search query
+  const filteredArticles = articles.filter(article => 
+    article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    article.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    article.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   );
   
-  // Group articles by tags
-  const articlesByTag: Record<string, typeof articles> = {};
-  
-  filteredArticles?.forEach(article => {
-    article.tags.forEach(tag => {
-      if (!articlesByTag[tag]) {
-        articlesByTag[tag] = [];
-      }
-      articlesByTag[tag]?.push(article);
-    });
-  });
+  // Filter playbooks based on search query
+  const filteredPlaybooks = playbooks.filter(playbook => 
+    playbook.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    playbook.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    playbook.team.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   
   return (
     <MainLayout>
-      <div className="mb-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <PageTitle 
-            title="Knowledge Base" 
-            description="Access articles, playbooks, and documented solutions" 
-          />
-          
-          <Button className="gap-2">
-            <Plus size={16} />
-            <span>New Article</span>
-          </Button>
-        </div>
+      <div>
+        <PageTitle 
+          title="Knowledge Base" 
+          description="Access playbooks, documentation, and AI assistance for incident management" 
+        />
         
-        <div className="flex flex-col md:flex-row gap-4 items-center mt-4">
-          <div className="relative w-full md:w-96">
-            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Search knowledge base..."
-              className="pl-8"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
+          <TabsList className="grid grid-cols-3 w-full max-w-md">
+            <TabsTrigger value="assistant" className="flex items-center gap-2">
+              <Search size={16} />
+              <span>AI Assistant</span>
+            </TabsTrigger>
+            <TabsTrigger value="articles" className="flex items-center gap-2">
+              <Book size={16} />
+              <span>Articles</span>
+            </TabsTrigger>
+            <TabsTrigger value="playbooks" className="flex items-center gap-2">
+              <Book size={16} />
+              <span>Playbooks</span>
+            </TabsTrigger>
+          </TabsList>
           
-          <Button variant="outline" size="sm" className="gap-2 whitespace-nowrap">
-            <Filter size={16} />
-            <span>Filter</span>
-          </Button>
-        </div>
-      </div>
-      
-      <Tabs defaultValue="all">
-        <TabsList>
-          <TabsTrigger value="all">All Articles</TabsTrigger>
-          <TabsTrigger value="playbooks">Playbooks</TabsTrigger>
-          <TabsTrigger value="solutions">Solutions</TabsTrigger>
-          <TabsTrigger value="tagged">By Tag</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="all" className="mt-6">
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array(6).fill(0).map((_, i) => (
-                <Skeleton key={i} className="h-[220px] w-full" />
-              ))}
+          <TabsContent value="assistant" className="mt-6">
+            <div className="grid grid-cols-1">
+              <AiAssistant />
             </div>
-          ) : filteredArticles && filteredArticles.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredArticles.map(article => (
-                <Card key={article.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-2 mb-2 text-muted-foreground">
-                      <FileText size={16} />
-                      <span className="text-sm">Article</span>
-                    </div>
-                    
-                    <h3 className="font-semibold mb-2 line-clamp-2">{article.title}</h3>
-                    
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-3">
-                      {article.content}
-                    </p>
-                    
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {article.tags.map(tag => (
-                        <div 
-                          key={tag} 
-                          className="px-2 py-0.5 bg-secondary text-secondary-foreground text-xs rounded-full flex items-center gap-1"
-                        >
-                          <Tag size={10} />
-                          <span>{tag}</span>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <div className="flex justify-between items-center text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <User size={12} />
-                        <span>{article.author}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock size={12} />
-                        <span>{format(new Date(article.updatedAt), 'MMM d, yyyy')}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-muted/50 rounded-lg p-8 text-center">
-              <BookOpen className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">No Articles Found</h3>
-              <p className="text-muted-foreground mb-4">
-                {searchTerm ? `No articles matching "${searchTerm}"` : "There are no knowledge articles yet"}
-              </p>
-              <Button className="gap-2">
-                <Plus size={16} />
-                <span>Create Article</span>
+          </TabsContent>
+          
+          <TabsContent value="articles" className="mt-6">
+            <div className="mb-6 flex gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input 
+                  placeholder="Search articles..." 
+                  className="pl-10"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <Button variant="outline" className="gap-2">
+                <Filter size={16} />
+                <span>Filters</span>
               </Button>
             </div>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="playbooks" className="mt-6">
-          <div className="bg-muted/50 rounded-lg p-8 text-center">
-            <BookOpen className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Playbooks Coming Soon</h3>
-            <p className="text-muted-foreground mb-4">
-              This section will contain step-by-step playbooks for incident response
-            </p>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="solutions" className="mt-6">
-          <div className="bg-muted/50 rounded-lg p-8 text-center">
-            <BookOpen className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Solutions Coming Soon</h3>
-            <p className="text-muted-foreground mb-4">
-              This section will contain documented solutions for common problems
-            </p>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="tagged" className="mt-6">
-          {isLoading ? (
-            Array(3).fill(0).map((_, i) => (
-              <Skeleton key={i} className="h-[200px] w-full mb-6" />
-            ))
-          ) : Object.keys(articlesByTag).length > 0 ? (
-            <div className="space-y-8">
-              {Object.entries(articlesByTag).map(([tag, tagArticles]) => (
-                <div key={tag}>
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="px-2 py-1 bg-secondary text-secondary-foreground text-sm rounded-lg flex items-center gap-1">
-                      <Tag size={14} />
-                      <span>{tag}</span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      {tagArticles?.length} articles
-                    </span>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filteredArticles.length === 0 ? (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-muted-foreground">No articles found matching your search criteria.</p>
+                </div>
+              ) : (
+                filteredArticles.map((article) => (
+                  <Card key={article.id}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">{article.title}</CardTitle>
+                      <CardDescription>{article.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {article.tags.map((tag, index) => (
+                          <Badge key={index} variant="secondary">{tag}</Badge>
+                        ))}
+                      </div>
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <User size={14} />
+                          <span>{article.author}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar size={14} />
+                          <span>{new Date(article.date).toLocaleDateString()}</span>
+                        </div>
+                        <Button variant="ghost" size="sm" className="gap-1 h-6">
+                          View Article
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="playbooks" className="mt-6">
+            <div className="mb-6 flex gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input 
+                  placeholder="Search playbooks..." 
+                  className="pl-10"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <Button variant="outline" className="gap-2">
+                <Filter size={16} />
+                <span>Filters</span>
+              </Button>
+            </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Incident Response Playbooks</CardTitle>
+                <CardDescription>
+                  Step-by-step guides for handling various incident types
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {filteredPlaybooks.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No playbooks found matching your search criteria.</p>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {tagArticles?.map(article => (
-                      <Card key={article.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                        <CardContent className="p-4">
-                          <h3 className="font-medium mb-1">{article.title}</h3>
-                          <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                            {article.content}
-                          </p>
-                          <div className="flex justify-between items-center text-xs text-muted-foreground">
-                            <span>{article.author}</span>
-                            <span>{format(new Date(article.updatedAt), 'MMM d, yyyy')}</span>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredPlaybooks.map((playbook) => (
+                      <div key={playbook.id}>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="font-medium">{playbook.title}</h3>
+                            <p className="text-sm text-muted-foreground">{playbook.description}</p>
+                            <div className="flex items-center gap-4 mt-2 text-sm">
+                              <div className="flex items-center gap-1">
+                                <User size={14} className="text-muted-foreground" />
+                                <span>{playbook.team} Team</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Clock size={14} className="text-muted-foreground" />
+                                <span>Updated {new Date(playbook.lastUpdated).toLocaleDateString()}</span>
+                              </div>
+                            </div>
                           </div>
-                        </CardContent>
-                      </Card>
+                          <Button size="sm">View Playbook</Button>
+                        </div>
+                        {playbook.id !== filteredPlaybooks[filteredPlaybooks.length - 1].id && (
+                          <Separator className="my-4" />
+                        )}
+                      </div>
                     ))}
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-muted/50 rounded-lg p-8 text-center">
-              <Tag className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">No Tags Found</h3>
-              <p className="text-muted-foreground">
-                {searchTerm ? `No articles with tags matching "${searchTerm}"` : "There are no tagged articles yet"}
-              </p>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </MainLayout>
   );
 }
