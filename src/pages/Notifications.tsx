@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PageTitle } from '@/components/common/PageTitle';
@@ -6,8 +5,10 @@ import { NotificationsPreferencesPanel } from '@/components/notifications/Notifi
 import { useForm } from 'react-hook-form';
 import { NotificationSettings } from '@/types/settings';
 import { toast } from '@/hooks/use-toast';
+import { UserNotification } from '@/lib/types';
+import { format, subDays } from 'date-fns';
+import { Bell, AlertTriangle, CheckCircle, MessageSquare, Info } from 'lucide-react';
 
-// Updating the severityLevels array to match the expected { id: string; name: string; } format
 const severityLevels = [
   { id: 'critical', name: 'Critical (SEV1)' },
   { id: 'high', name: 'High (SEV2)' },
@@ -16,7 +17,6 @@ const severityLevels = [
   { id: 'info', name: 'Info (SEV5)' }
 ];
 
-// Updating the incidentTypes array to match the expected { id: string; name: string; } format
 const incidentTypes = [
   { id: 'all', name: 'All Types' },
   { id: 'dataset', name: 'Dataset' },
@@ -27,7 +27,6 @@ const incidentTypes = [
   { id: 'security', name: 'Security' }
 ];
 
-// Updating the businessUnits array to match the expected { id: string; name: string; } format
 const businessUnits = [
   { id: 'all', name: 'All Business Units' },
   { id: 'bu1', name: 'Business Unit 1' },
@@ -36,7 +35,6 @@ const businessUnits = [
   { id: 'bu4', name: 'Business Unit 4' }
 ];
 
-// Updating the teams array to match the expected { id: string; name: string; } format
 const teams = [
   { id: 'all', name: 'All Teams' },
   { id: 'bu1-team1', name: 'BU1 - Team 1' },
@@ -46,7 +44,6 @@ const teams = [
   { id: 'bu4-team2', name: 'BU4 - Team 2' }
 ];
 
-// Updating the services array to match the expected { id: string; name: string; } format
 const services = [
   { id: 'all', name: 'All Services' },
   { id: 'data-api', name: 'Data API' },
@@ -56,7 +53,6 @@ const services = [
   { id: 'data-storage', name: 'Data Storage' }
 ];
 
-// Updating the businessFlows array to match the expected { id: string; name: string; } format
 const businessFlows = [
   { id: 'all', name: 'All Business Flows' },
   { id: 'user-onboarding', name: 'User Onboarding' },
@@ -66,12 +62,96 @@ const businessFlows = [
   { id: 'user-authentication', name: 'User Authentication' }
 ];
 
-// Create the NotificationsPage component with a default export
+const generateRecentNotifications = (): UserNotification[] => {
+  const now = new Date();
+  
+  return [
+    {
+      id: 'n001',
+      relatedIncidentId: 'INC-2023-010',
+      title: 'Critical Incident: Database Cluster Outage',
+      message: 'A new critical incident has been created affecting the main database cluster. Your team has been assigned for investigation.',
+      timestamp: subDays(now, 2).toISOString(),
+      read: false,
+      type: 'incident_new'
+    },
+    {
+      id: 'n002',
+      relatedIncidentId: 'INC-2023-009',
+      title: 'Incident Update: Payment Processing Issue',
+      message: 'The incident has been updated to "Monitoring" status. Root cause identified as API rate limiting.',
+      timestamp: subDays(now, 4).toISOString(),
+      read: true,
+      type: 'incident_update'
+    },
+    {
+      id: 'n003',
+      relatedIncidentId: 'INC-2023-008',
+      title: 'Incident Resolved: Authentication Service',
+      message: 'The authentication service incident has been successfully resolved. Time to resolution: 3h 42m.',
+      timestamp: subDays(now, 7).toISOString(),
+      read: false,
+      type: 'incident_resolved'
+    },
+    {
+      id: 'n004',
+      title: 'You were mentioned in incident discussion',
+      message: 'Sarah Johnson mentioned you in a comment: "Can @user confirm if this issue is also affecting the backup systems?"',
+      timestamp: subDays(now, 8).toISOString(),
+      read: false,
+      type: 'mention'
+    },
+    {
+      id: 'n005',
+      title: 'Planned Maintenance',
+      message: 'Reminder: Scheduled maintenance for the API Gateway will take place tomorrow at 2:00 AM UTC.',
+      timestamp: subDays(now, 10).toISOString(),
+      read: true,
+      type: 'system'
+    },
+    {
+      id: 'n006',
+      relatedIncidentId: 'INC-2023-007',
+      title: 'Incident Update: CDN Performance Issues',
+      message: 'Incident severity has been upgraded from Medium to High. Multiple regions are now impacted.',
+      timestamp: subDays(now, 12).toISOString(),
+      read: true,
+      type: 'incident_update'
+    },
+    {
+      id: 'n007',
+      relatedIncidentId: 'INC-2023-006',
+      title: 'Daily Incident Digest',
+      message: 'There are 3 open incidents affecting your teams. 1 Critical, 1 High, and 1 Medium severity.',
+      timestamp: subDays(now, 14).toISOString(),
+      read: true,
+      type: 'system'
+    }
+  ];
+};
+
+const getNotificationIcon = (type: UserNotification['type']) => {
+  switch (type) {
+    case 'incident_new':
+      return <AlertTriangle className="h-5 w-5 text-red-500" />;
+    case 'incident_update':
+      return <Bell className="h-5 w-5 text-amber-500" />;
+    case 'incident_resolved':
+      return <CheckCircle className="h-5 w-5 text-green-500" />;
+    case 'mention':
+      return <MessageSquare className="h-5 w-5 text-blue-500" />;
+    case 'system':
+      return <Info className="h-5 w-5 text-slate-500" />;
+    default:
+      return <Bell className="h-5 w-5" />;
+  }
+};
+
 function NotificationsPage() {
   const [showPreferences, setShowPreferences] = useState(false);
   const [keyword, setKeyword] = useState('');
+  const [notifications] = useState<UserNotification[]>(generateRecentNotifications());
   
-  // Initialize the form with default values
   const form = useForm<NotificationSettings>({
     defaultValues: {
       emailNotifications: true,
@@ -96,7 +176,6 @@ function NotificationsPage() {
     }
   });
 
-  // Handle form submission
   const handleSubmit = (data: NotificationSettings) => {
     console.log('Preferences saved:', data);
     toast({
@@ -106,7 +185,6 @@ function NotificationsPage() {
     setShowPreferences(false);
   };
 
-  // Function to add a keyword
   const addKeyword = () => {
     if (keyword.trim() && !form.getValues().keywords.includes(keyword.trim())) {
       const currentKeywords = form.getValues().keywords || [];
@@ -140,37 +218,66 @@ function NotificationsPage() {
               addKeyword={addKeyword}
             />
           ) : (
-            <div className="flex justify-end mb-4">
-              <button
-                onClick={() => setShowPreferences(true)}
-                className="flex items-center text-sm font-medium text-primary hover:text-primary/80"
-              >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  viewBox="0 0 20 20" 
-                  fill="currentColor" 
-                  className="w-4 h-4 mr-1"
+            <>
+              <div className="flex justify-end mb-4">
+                <button
+                  onClick={() => setShowPreferences(true)}
+                  className="flex items-center text-sm font-medium text-primary hover:text-primary/80"
                 >
-                  <path 
-                    fillRule="evenodd" 
-                    d="M7.84 1.804A1 1 0 018.82 1h2.36a1 1 0 01.98.804l.331 1.652a6.993 6.993 0 011.929 1.115l1.598-.54a1 1 0 011.186.447l1.18 2.044a1 1 0 01-.205 1.251l-1.267 1.113a7.047 7.047 0 010 2.228l1.267 1.113a1 1 0 01.206 1.25l-1.18 2.045a1 1 0 01-1.187.447l-1.598-.54a6.993 6.993 0 01-1.93 1.115l-.33 1.652a1 1 0 01-.98.804H8.82a1 1 0 01-.98-.804l-.331-1.652a6.993 6.993 0 01-1.929-1.115l-1.598.54a1 1 0 01-1.186-.447l-1.18-2.044a1 1 0 01.205-1.251l1.267-1.114a7.05 7.05 0 010-2.227L1.821 7.773a1 1 0 01-.206-1.25l1.18-2.045a1 1 0 011.187-.447l1.598.54A6.993 6.993 0 017.51 3.455l.33-1.652zM10 13a3 3 0 100-6 3 3 0 000 6z" 
-                    clipRule="evenodd" 
-                  />
-                </svg>
-                Notification Preferences
-              </button>
-            </div>
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    viewBox="0 0 20 20" 
+                    fill="currentColor" 
+                    className="w-4 h-4 mr-1"
+                  >
+                    <path 
+                      fillRule="evenodd" 
+                      d="M7.84 1.804A1 1 0 018.82 1h2.36a1 1 0 01.98.804l.331 1.652a6.993 6.993 0 011.929 1.115l1.598-.54a1 1 0 011.186.447l1.18 2.044a1 1 0 01-.205 1.251l-1.267 1.113a7.047 7.047 0 010 2.228l1.267 1.113a1 1 0 01.206 1.25l-1.18 2.045a1 1 0 01-1.187.447l-1.598-.54a6.993 6.993 0 01-1.93 1.115l-.33 1.652a1 1 0 01-.98.804H8.82a1 1 0 01-.98-.804l-.331-1.652a6.993 6.993 0 01-1.929-1.115l-1.598.54a1 1 0 01-1.186-.447l-1.18-2.044a1 1 0 01.205-1.251l1.267-1.114a7.05 7.05 0 010-2.227L1.821 7.773a1 1 0 01-.206-1.25l1.18-2.045a1 1 0 011.187-.447l1.598.54A6.993 6.993 0 017.51 3.455l.33-1.652zM10 13a3 3 0 100-6 3 3 0 000 6z" 
+                      clipRule="evenodd" 
+                    />
+                  </svg>
+                  Notification Preferences
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                {notifications.length > 0 ? (
+                  notifications.map((notification) => (
+                    <div 
+                      key={notification.id} 
+                      className={`bg-card border rounded-lg p-4 flex items-start gap-3 transition-colors ${!notification.read ? 'border-primary/50 bg-primary/5' : ''}`}
+                    >
+                      <div className="flex-shrink-0 mt-1">
+                        {getNotificationIcon(notification.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-sm text-foreground">
+                          {notification.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {notification.message}
+                        </p>
+                        <div className="text-xs text-muted-foreground mt-2">
+                          {format(new Date(notification.timestamp), 'MMM d, yyyy • h:mm a')}
+                        </div>
+                      </div>
+                      {!notification.read && (
+                        <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2" aria-label="Unread notification"></div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="bg-card text-card-foreground border rounded-lg p-6">
+                    <p className="text-muted-foreground">No new notifications.</p>
+                  </div>
+                )}
+              </div>
+            </>
           )}
-          
-          {/* Notifications list would go here */}
-          <div className="bg-card text-card-foreground border rounded-lg p-6">
-            <p className="text-muted-foreground">No new notifications.</p>
-          </div>
         </div>
       </div>
     </MainLayout>
   );
 }
 
-// Add the default export to fix the error
 export default NotificationsPage;
