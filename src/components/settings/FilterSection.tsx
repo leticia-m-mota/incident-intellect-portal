@@ -33,6 +33,8 @@ export function FilterSection({ form, title, description, name, options }: Filte
                 control={form.control}
                 name={name}
                 render={({ field }) => {
+                  // Ensure field.value is an array
+                  const value = Array.isArray(field.value) ? field.value : [];
                   return (
                     <FormItem
                       key={option.id}
@@ -40,13 +42,13 @@ export function FilterSection({ form, title, description, name, options }: Filte
                     >
                       <FormControl>
                         <Checkbox
-                          checked={field.value?.includes(option.id)}
+                          checked={value.includes(option.id)}
                           onCheckedChange={(checked) => {
                             return checked
-                              ? field.onChange([...field.value, option.id])
+                              ? field.onChange([...value, option.id])
                               : field.onChange(
-                                  field.value?.filter(
-                                    (value) => value !== option.id
+                                  value.filter(
+                                    (val) => val !== option.id
                                   )
                                 )
                           }}

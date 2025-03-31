@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Bell, User, Lock, Settings as SettingsIcon, Link } from 'lucide-react';
+import { User, Lock, Settings as SettingsIcon, Link } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface SettingsSidebarProps {
@@ -14,14 +14,6 @@ export function SettingsSidebar({ activeTab, setActiveTab }: SettingsSidebarProp
     <Card className="md:h-fit">
       <CardContent className="p-4">
         <nav className="space-y-1">
-          <Button 
-            variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} 
-            className="w-full justify-start" 
-            onClick={() => setActiveTab('notifications')}
-          >
-            <Bell className="mr-2 h-4 w-4" />
-            Notifications
-          </Button>
           <Button 
             variant={activeTab === 'profile' ? 'secondary' : 'ghost'} 
             className="w-full justify-start" 

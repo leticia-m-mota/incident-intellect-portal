@@ -17,5 +17,6 @@ export type NotificationSettings = {
   impactedTeams: string[];
   incidentTypes: string[];
   businessUnits: string[];
+  businessFlows: string[];
   keywords: string[];
 };

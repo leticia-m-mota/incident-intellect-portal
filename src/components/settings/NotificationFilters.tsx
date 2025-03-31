@@ -11,6 +11,7 @@ interface NotificationFiltersProps {
   severityLevels: Array<{ id: string; name: string }>;
   incidentTypes: Array<{ id: string; name: string }>;
   businessUnits: Array<{ id: string; name: string }>;
+  businessFlows?: Array<{ id: string; name: string }>;
   teams: Array<{ id: string; name: string }>;
   services: Array<{ id: string; name: string }>;
   keyword: string;
@@ -22,7 +23,8 @@ export function NotificationFilters({
   form, 
   severityLevels, 
   incidentTypes, 
-  businessUnits, 
+  businessUnits,
+  businessFlows = [],
   teams, 
   services, 
   keyword, 
@@ -61,14 +63,15 @@ export function NotificationFilters({
           options={businessUnits}
         />
 
-        <TeamOrServiceSelector 
-          form={form}
-          name="teams"
-          label="Teams"
-          description="Select which teams you want to follow for incident notifications"
-          options={teams}
-          placeholder="Select team"
-        />
+        {businessFlows.length > 0 && (
+          <FilterSection 
+            form={form}
+            title="Business Flows"
+            description="Select which business flows you want to be notified about"
+            name="businessFlows"
+            options={businessFlows}
+          />
+        )}
 
         <TeamOrServiceSelector 
           form={form}

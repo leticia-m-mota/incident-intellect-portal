@@ -29,6 +29,12 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
+    /* Accessible severity colors with better contrast */
+    --severity-critical: 0 85% 53%;    /* #e02712 - Better red */
+    --severity-high: 25 95% 53%;      /* #e27112 - Better orange */
+    --severity-medium: 40 100% 48%;   /* #e6b800 - Better yellow */
+    --severity-low: 142 50% 45%;      /* #2a9d6f - Better green */
+    
     --border: 240 6% 90%;
     --input: 240 6% 90%;
     --ring: 263 40% 50%;
@@ -59,22 +65,35 @@
 
 @layer components {
   .badge-critical {
-    @apply bg-severity-critical/15 text-severity-critical px-2 py-1 rounded text-xs font-semibold;
+    @apply bg-[hsl(var(--severity-critical))]/15 text-[hsl(var(--severity-critical))] px-2 py-1 rounded text-xs font-semibold;
   }
   
   .badge-high {
-    @apply bg-severity-high/15 text-severity-high px-2 py-1 rounded text-xs font-semibold;
+    @apply bg-[hsl(var(--severity-high))]/15 text-[hsl(var(--severity-high))] px-2 py-1 rounded text-xs font-semibold;
   }
   
   .badge-medium {
-    @apply bg-severity-medium/15 text-severity-medium px-2 py-1 rounded text-xs font-semibold;
+    @apply bg-[hsl(var(--severity-medium))]/15 text-[hsl(var(--severity-medium))] px-2 py-1 rounded text-xs font-semibold;
   }
   
   .badge-low {
-    @apply bg-severity-low/15 text-severity-low px-2 py-1 rounded text-xs font-semibold;
+    @apply bg-[hsl(var(--severity-low))]/15 text-[hsl(var(--severity-low))] px-2 py-1 rounded text-xs font-semibold;
   }
 
   .card-gradient {
     @apply bg-gradient-to-br from-purple-light/10 to-purple/5;
+  }
+  
+  /* Reduced icon size classes */
+  .icon-sm {
+    @apply h-3.5 w-3.5;
+  }
+  
+  .icon-md {
+    @apply h-4 w-4;
+  }
+  
+  .icon-lg {
+    @apply h-5 w-5;
   }
 }

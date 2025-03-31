@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PageTitle } from '@/components/common/PageTitle';
 import { 
@@ -41,12 +42,17 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
+import { NotificationsPreferencesPanel } from '@/components/notifications/NotificationsPreferencesPanel';
+import { NotificationSettings } from '@/types/settings';
+import { toast } from '@/hooks/use-toast';
 
 export default function Notifications() {
   const [showFilters, setShowFilters] = useState(false);
   const [filterType, setFilterType] = useState<string>('all');
   const [filterBusinessUnit, setFilterBusinessUnit] = useState<string>('all');
   const [filterTeam, setFilterTeam] = useState<string>('all');
+  const [showPreferences, setShowPreferences] = useState(false);
+  const [keyword, setKeyword] = useState('');
   
   // Sample data
   const notifications = [
@@ -115,25 +121,57 @@ export default function Notifications() {
   // Filter data
   const incidentTypes = [
     { label: 'All Types', value: 'all' },
-    { label: 'Dataset', value: 'dataset' },
-    { label: 'Data Platform', value: 'data-platform' },
-    { label: 'Data Model', value: 'data-model' },
-    { label: 'Fraud', value: 'fraud' },
-    { label: 'Engineering', value: 'engineering' },
-    { label: 'Security', value: 'security' },
+    { label: 'Dataset', value: 'dataset', id: 'Dataset' },
+    { label: 'Data Platform', value: 'data-platform', id: 'Data Platform' },
+    { label: 'Data Model', value: 'data-model', id: 'Data Model' },
+    { label: 'Fraud', value: 'fraud', id: 'Fraud' },
+    { label: 'Engineering', value: 'engineering', id: 'Engineering' },
+    { label: 'Security', value: 'security', id: 'Security' },
   ];
   
   const businessUnits = [
     { label: 'All Business Units', value: 'all' },
-    { label: 'Business Unit 1', value: 'bu1' },
-    { label: 'Business Unit 2', value: 'bu2' },
+    { label: 'Business Unit 1', value: 'bu1', id: 'Business Unity 1' },
+    { label: 'Business Unit 2', value: 'bu2', id: 'BU 2' },
   ];
   
   const teams = [
     { label: 'All Teams', value: 'all' },
-    { label: 'BU1 - Team 1', value: 'bu1-team1' },
-    { label: 'BU1 - Team 2', value: 'bu1-team2' },
-    { label: 'BU2 - Team 4', value: 'bu2-team4' },
+    { label: 'BU1 - Team 1', value: 'bu1-team1', id: 'BU1 - Team 1' },
+    { label: 'BU1 - Team 2', value: 'bu1-team2', id: 'BU1 - Team 2' },
+    { label: 'BU2 - Team 4', value: 'bu2-team4', id: 'BU2 - Team 4' },
+    { label: 'Platform Team', value: 'platform', id: 'platform' },
+    { label: 'Frontend Team', value: 'frontend', id: 'frontend' },
+    { label: 'Backend Team', value: 'backend', id: 'backend' },
+    { label: 'Mobile Team', value: 'mobile', id: 'mobile' },
+    { label: 'Data Team', value: 'data', id: 'data' },
+    { label: 'DevOps Team', value: 'devops', id: 'devops' },
+    { label: 'SRE Team', value: 'sre', id: 'sre' },
+  ];
+
+  const services = [
+    { id: 'api-gateway', name: 'API Gateway' },
+    { id: 'auth-service', name: 'Authentication Service' },
+    { id: 'payment-service', name: 'Payment Service' },
+    { id: 'database', name: 'Database Cluster' },
+    { id: 'search-service', name: 'Search Service' },
+    { id: 'cdn', name: 'CDN' },
+    { id: 'mobile-api', name: 'Mobile API' },
+  ];
+
+  const severityLevels = [
+    { id: 'critical', name: 'Critical' },
+    { id: 'high', name: 'High' },
+    { id: 'medium', name: 'Medium' },
+    { id: 'low', name: 'Low' },
+  ];
+
+  const businessFlows = [
+    { id: 'order-processing', name: 'Order Processing' },
+    { id: 'user-registration', name: 'User Registration' },
+    { id: 'payment-flow', name: 'Payment Flow' },
+    { id: 'data-ingestion', name: 'Data Ingestion' },
+    { id: 'reporting', name: 'Reporting' },
   ];
 
   // Reset filters
@@ -150,6 +188,49 @@ export default function Notifications() {
     if (filterBusinessUnit !== 'all') count++;
     if (filterTeam !== 'all') count++;
     return count;
+  };
+
+  // Form for notification preferences
+  const form = useForm<NotificationSettings>({
+    defaultValues: {
+      emailNotifications: true,
+      slackNotifications: true,
+      smsNotifications: false,
+      inAppNotifications: true,
+      opsgenieNotifications: false,
+      newIncidents: true,
+      incidentUpdates: true,
+      incidentResolved: true,
+      mentionsOnly: false,
+      dailyDigest: true,
+      severityLevels: ['critical', 'high'],
+      teams: ['platform', 'frontend'],
+      services: ['api-gateway', 'auth-service'],
+      responsibleTeams: ['BU1 - Team 1'],
+      impactedTeams: ['BU1 - Team 2'],
+      incidentTypes: ['Data Platform', 'Security'],
+      businessUnits: ['Business Unity 1'],
+      businessFlows: ['payment-flow', 'data-ingestion'],
+      keywords: ['urgent', 'outage'],
+    },
+  });
+
+  const onSubmit = (data: NotificationSettings) => {
+    console.log(data);
+    // Save notification settings
+    toast({
+      title: "Settings Saved",
+      description: "Your notification preferences have been updated",
+    });
+    setShowPreferences(false);
+  };
+
+  const addKeyword = () => {
+    if (keyword.trim() && !form.getValues().keywords.includes(keyword.trim())) {
+      const updatedKeywords = [...form.getValues().keywords, keyword.trim()];
+      form.setValue('keywords', updatedKeywords);
+      setKeyword('');
+    }
   };
 
   // Format relative time
@@ -190,7 +271,7 @@ export default function Notifications() {
             className="gap-2"
             onClick={() => setShowFilters(!showFilters)}
           >
-            <Filter size={16} />
+            <Filter size={14} />
             <span>Filters</span>
             {getActiveFiltersCount() > 0 && (
               <Badge variant="secondary" className="ml-1">{getActiveFiltersCount()}</Badge>
@@ -202,15 +283,16 @@ export default function Notifications() {
             className="gap-2"
             onClick={() => {}}
           >
-            <Eye size={16} />
+            <Eye size={14} />
             <span>Mark all as read</span>
           </Button>
           <Button 
             variant="ghost"
             size="icon"
-            onClick={() => {}}
+            onClick={() => setShowPreferences(true)}
+            aria-label="Notification settings"
           >
-            <Settings size={18} />
+            <Settings size={14} />
           </Button>
         </div>
       </div>
@@ -412,6 +494,23 @@ export default function Notifications() {
           </TabsContent>
         </div>
       </Tabs>
+
+      {showPreferences && (
+        <NotificationsPreferencesPanel
+          form={form}
+          onSubmit={onSubmit}
+          severityLevels={severityLevels}
+          incidentTypes={incidentTypes.filter(type => type.id)}
+          businessUnits={businessUnits.filter(unit => unit.id)}
+          businessFlows={businessFlows}
+          teams={teams.filter(team => team.id)}
+          services={services}
+          keyword={keyword}
+          setKeyword={setKeyword}
+          addKeyword={addKeyword}
+          onClose={() => setShowPreferences(false)}
+        />
+      )}
     </MainLayout>
   );
 }
