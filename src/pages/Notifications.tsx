@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PageTitle } from '@/components/common/PageTitle';
 import { NotificationsPreferencesPanel } from '@/components/notifications/NotificationsPreferencesPanel';
+import { useForm } from 'react-hook-form';
+import { NotificationSettings } from '@/types/settings';
+import { toast } from '@/hooks/use-toast';
 
 // Updating the severityLevels array to match the expected { id: string; name: string; } format
 const severityLevels = [
@@ -66,6 +69,51 @@ const businessFlows = [
 // Create the NotificationsPage component with a default export
 function NotificationsPage() {
   const [showPreferences, setShowPreferences] = useState(false);
+  const [keyword, setKeyword] = useState('');
+  
+  // Initialize the form with default values
+  const form = useForm<NotificationSettings>({
+    defaultValues: {
+      emailNotifications: true,
+      slackNotifications: true,
+      smsNotifications: false,
+      inAppNotifications: true,
+      opsgenieNotifications: false,
+      newIncidents: true,
+      incidentUpdates: true,
+      incidentResolved: true,
+      mentionsOnly: false,
+      dailyDigest: true,
+      severityLevels: ['critical', 'high'],
+      teams: [],
+      services: [],
+      responsibleTeams: [],
+      impactedTeams: [],
+      incidentTypes: ['all'],
+      businessUnits: ['all'],
+      businessFlows: ['all'],
+      keywords: []
+    }
+  });
+
+  // Handle form submission
+  const handleSubmit = (data: NotificationSettings) => {
+    console.log('Preferences saved:', data);
+    toast({
+      title: "Preferences saved",
+      description: "Your notification preferences have been updated successfully.",
+    });
+    setShowPreferences(false);
+  };
+
+  // Function to add a keyword
+  const addKeyword = () => {
+    if (keyword.trim() && !form.getValues().keywords.includes(keyword.trim())) {
+      const currentKeywords = form.getValues().keywords || [];
+      form.setValue('keywords', [...currentKeywords, keyword.trim()]);
+      setKeyword('');
+    }
+  };
 
   return (
     <MainLayout>
@@ -78,6 +126,8 @@ function NotificationsPage() {
         <div className="mt-6">
           {showPreferences ? (
             <NotificationsPreferencesPanel 
+              form={form}
+              onSubmit={handleSubmit}
               onClose={() => setShowPreferences(false)}
               severityLevels={severityLevels}
               incidentTypes={incidentTypes}
@@ -85,6 +135,9 @@ function NotificationsPage() {
               teams={teams}
               services={services}
               businessFlows={businessFlows}
+              keyword={keyword}
+              setKeyword={setKeyword}
+              addKeyword={addKeyword}
             />
           ) : (
             <div className="flex justify-end mb-4">
