@@ -23,7 +23,7 @@ export function IncidentStatusBadge({ status, className }: IncidentStatusBadgePr
     <Badge 
       variant="outline" 
       className={cn(
-        'font-medium border-0',
+        'font-medium border-0 text-xs py-0.5 px-1.5',
         badgeStyles[status],
         className
       )}

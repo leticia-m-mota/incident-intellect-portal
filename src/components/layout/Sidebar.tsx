@@ -40,7 +40,7 @@ export function AppSidebar() {
       path: '/',
     },
     {
-      title: 'Analytics & Metrics',
+      title: 'Analytics',
       icon: Layers,
       path: '/analytics',
     },
@@ -63,7 +63,7 @@ export function AppSidebar() {
       path: '/knowledge',
     },
     {
-      title: 'User Management',
+      title: 'Users',
       icon: Users,
       path: '/users',
     },
@@ -83,29 +83,30 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="flex justify-center items-center py-6">
+      <SidebarHeader className="flex justify-center items-center py-4">
         <div className="flex items-center justify-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-purple-light flex items-center justify-center">
-            <AlertCircle size={18} className="text-white" />
+          <div className="h-7 w-7 rounded-full bg-purple-light flex items-center justify-center">
+            <AlertCircle size={15} className="text-white" />
           </div>
-          <span className="text-white font-bold">IntelliResponse</span>
+          <span className="text-white text-sm font-semibold">IntelliResponse</span>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-medium">Main</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainMenuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     className={cn(
+                      "py-2 text-sm",
                       isActive(item.path) && 
                       "bg-sidebar-accent text-sidebar-primary hover:bg-sidebar-accent"
                     )}
                     onClick={() => navigate(item.path)}
                   >
-                    <item.icon size={18} />
+                    <item.icon className="icon-sm" />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -114,19 +115,20 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup>
-          <SidebarGroupLabel>Support</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-medium">Support</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {supportMenuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     className={cn(
+                      "py-2 text-sm",
                       isActive(item.path) && 
                       "bg-sidebar-accent text-sidebar-primary hover:bg-sidebar-accent"
                     )}
                     onClick={() => navigate(item.path)}
                   >
-                    <item.icon size={18} />
+                    <item.icon className="icon-sm" />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -135,18 +137,18 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-3">
         <div className="flex gap-2 items-center">
-          <div className="h-8 w-8 rounded-full bg-purple-light/20">
+          <div className="h-7 w-7 rounded-full bg-purple-light/20">
             <img 
               src="https://ui-avatars.com/api/?name=Admin&background=6E59A5&color=fff" 
               alt="Admin" 
               className="rounded-full" 
             />
           </div>
-          <div className="text-sm">
-            <p className="text-white">Admin User</p>
-            <p className="text-white/60 text-xs">Incident Manager</p>
+          <div>
+            <p className="text-white text-xs font-medium">Admin User</p>
+            <p className="text-white/60 text-[10px]">Incident Manager</p>
           </div>
         </div>
       </SidebarFooter>

@@ -3,7 +3,6 @@ import React from 'react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { 
-  BellRing, 
   Search, 
   Plus, 
   MessageSquare, 
@@ -16,15 +15,15 @@ export function Header() {
   const navigate = useNavigate();
 
   return (
-    <header className="border-b border-border h-16 px-4 flex items-center justify-between bg-white">
-      <div className="flex items-center gap-4">
+    <header className="border-b border-border h-14 px-4 flex items-center justify-between bg-white">
+      <div className="flex items-center gap-3">
         <SidebarTrigger />
-        <div className="relative w-64 hidden md:block">
-          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+        <div className="relative w-60 hidden md:block">
+          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground icon-sm" />
           <input 
             type="text"
-            placeholder="Search incidents, teams..."
-            className="pl-8 pr-4 py-2 text-sm rounded-md border border-input w-full"
+            placeholder="Search..."
+            className="pl-7 pr-3 py-1.5 text-sm rounded-md border border-input w-full h-8"
           />
         </div>
       </div>
@@ -33,35 +32,35 @@ export function Header() {
         <Button 
           variant="outline" 
           size="sm" 
-          className="hidden md:flex gap-2 items-center"
+          className="hidden md:flex gap-1.5 items-center h-8 text-xs"
         >
-          <Calendar size={16} />
-          <span>Incident Calendar</span>
+          <Calendar className="icon-sm" />
+          <span>Calendar</span>
         </Button>
         
         <Button 
           variant="outline" 
           size="sm" 
-          className="hidden md:flex gap-2 items-center"
+          className="hidden md:flex gap-1.5 items-center h-8 text-xs"
           onClick={() => navigate('/incidents/new')}
         >
-          <MessageSquare size={16} />
-          <span>Status Updates</span>
+          <MessageSquare className="icon-sm" />
+          <span>Updates</span>
         </Button>
         
         <Button 
           variant="default" 
           size="sm" 
-          className="gap-2 items-center"
+          className="gap-1.5 items-center h-8 text-xs"
           onClick={() => navigate('/incidents/new')}
         >
-          <Plus size={16} />
-          <span>New Incident</span>
+          <Plus className="icon-sm" />
+          <span>New</span>
         </Button>
         
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell size={18} />
-          <span className="absolute -top-1 -right-1 h-4 w-4 bg-purple text-white text-xs rounded-full flex items-center justify-center">
+        <Button variant="ghost" size="icon" className="relative h-8 w-8">
+          <Bell className="icon-sm" />
+          <span className="absolute -top-1 -right-1 h-3.5 w-3.5 bg-purple text-white text-[10px] rounded-full flex items-center justify-center">
             3
           </span>
         </Button>

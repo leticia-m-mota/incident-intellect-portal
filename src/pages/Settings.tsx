@@ -11,16 +11,16 @@ export default function SettingsPage() {
   
   return (
     <MainLayout>
-      <div>
+      <div className="max-w-7xl mx-auto">
         <PageTitle 
           title="Settings" 
           description="Configure your account and system preferences" 
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-5 mt-5">
           <SettingsSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-          <div className="space-y-6">
+          <div className="space-y-5">
             {activeTab === 'integrations' && <IntegrationsTab />}
 
             {/* Placeholder tabs */}
