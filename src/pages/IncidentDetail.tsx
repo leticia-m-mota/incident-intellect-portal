@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -15,6 +14,8 @@ import { IncidentSeverityBadge } from '@/components/incidents/IncidentSeverityBa
 import { IncidentStatusBadge } from '@/components/incidents/IncidentStatusBadge';
 import { IncidentTimeline } from '@/components/incidents/IncidentTimeline';
 import { IncidentLearningsSection } from '@/components/incidents/IncidentLearningsSection';
+import { IncidentImpactMetrics } from '@/components/incidents/IncidentImpactMetrics';
+import { AiAssistant } from '@/components/ai/AiAssistant';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -271,39 +272,6 @@ export default function IncidentDetail() {
                   </div>
                 </CardContent>
               </Card>
-            
-              {/* AI Assistant Card - Only for Active Incidents */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <AlertCircle size={18} className="text-purple" />
-                    <span>AI Assistance</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="bg-muted/40 p-4 rounded-lg mb-4">
-                    <p className="text-sm mb-3">
-                      Based on the incident description and timeline, this appears to be related to:
-                    </p>
-                    <ul className="text-sm list-disc pl-5 mb-3 space-y-1">
-                      <li>Configuration issues in the {incident.impactedSystems[0]}</li>
-                      <li>Recent deployment changes</li>
-                      <li>Potential resource constraints</li>
-                    </ul>
-                    <p className="text-sm font-medium">
-                      Suggested actions:
-                    </p>
-                    <ul className="text-sm list-disc pl-5 space-y-1">
-                      <li>Verify recent configuration changes</li>
-                      <li>Check system logs for error patterns</li>
-                      <li>Review recent scaling events</li>
-                    </ul>
-                  </div>
-                  <Button className="w-full" variant="outline">
-                    Ask AI for Help
-                  </Button>
-                </CardContent>
-              </Card>
             </>
           ) : (
             /* Resolved Incident View */
@@ -320,110 +288,7 @@ export default function IncidentDetail() {
                     <CardTitle className="text-lg">Incident Impact</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {incident.metrics ? (
-                      <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-4">
-                            <div>
-                              <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                                Time to Acknowledge
-                              </h3>
-                              <p className="text-2xl font-semibold">
-                                {incident.metrics.timeToAcknowledge} minutes
-                              </p>
-                            </div>
-                            
-                            {incident.metrics.timeToResolve && (
-                              <div>
-                                <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                                  Time to Resolve
-                                </h3>
-                                <p className="text-2xl font-semibold">
-                                  {incident.metrics.timeToResolve} minutes 
-                                  <span className="text-sm text-muted-foreground ml-2">
-                                    ({Math.round(incident.metrics.timeToResolve / 60)} hours)
-                                  </span>
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                          
-                          <div className="space-y-4">
-                            {incident.metrics.affectedUsers && (
-                              <div>
-                                <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                                  Affected Users
-                                </h3>
-                                <p className="text-2xl font-semibold">
-                                  {incident.metrics.affectedUsers.toLocaleString()}
-                                </p>
-                              </div>
-                            )}
-                            
-                            {incident.metrics.serviceDowntime && (
-                              <div>
-                                <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                                  Service Downtime
-                                </h3>
-                                <p className="text-2xl font-semibold">
-                                  {incident.metrics.serviceDowntime} minutes
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="pt-4 border-t">
-                          <h3 className="text-sm font-medium mb-3">Key Impact Indicators</h3>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <Card className="bg-muted/30">
-                              <CardContent className="pt-6">
-                                <div className="text-center">
-                                  <h4 className="text-sm font-medium text-muted-foreground mb-1">User Impact</h4>
-                                  <p className="text-2xl font-bold">
-                                    {incident.metrics.affectedUsers ? 
-                                      (incident.metrics.affectedUsers > 10000 ? 'High' : 
-                                       incident.metrics.affectedUsers > 1000 ? 'Medium' : 'Low') : 
-                                      'N/A'}
-                                  </p>
-                                </div>
-                              </CardContent>
-                            </Card>
-                            
-                            <Card className="bg-muted/30">
-                              <CardContent className="pt-6">
-                                <div className="text-center">
-                                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Business Impact</h4>
-                                  <p className="text-2xl font-bold">
-                                    {incident.severity === 'critical' ? 'Severe' : 
-                                     incident.severity === 'high' ? 'Significant' : 
-                                     incident.severity === 'medium' ? 'Moderate' : 'Low'}
-                                  </p>
-                                </div>
-                              </CardContent>
-                            </Card>
-                            
-                            <Card className="bg-muted/30">
-                              <CardContent className="pt-6">
-                                <div className="text-center">
-                                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Time to Restore</h4>
-                                  <p className="text-2xl font-bold">
-                                    {incident.metrics.timeToResolve ? 
-                                      (incident.metrics.timeToResolve > 240 ? 'Slow' : 
-                                       incident.metrics.timeToResolve > 60 ? 'Medium' : 'Fast') : 
-                                      'N/A'}
-                                  </p>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="py-8 text-center">
-                        <p className="text-muted-foreground">No metrics available for this incident</p>
-                      </div>
-                    )}
+                    <IncidentImpactMetrics incident={incident} />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -454,6 +319,19 @@ export default function IncidentDetail() {
           {/* Only show relevant cards based on incident status */}
           {isActiveIncident ? (
             <>
+              {/* AI Assistant - Moved to top for active incidents */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <AlertCircle size={18} className="text-purple" />
+                    <span>AI Assistance</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <AiAssistant />
+                </CardContent>
+              </Card>
+              
               {/* Related Knowledge */}
               <Card>
                 <CardHeader>
