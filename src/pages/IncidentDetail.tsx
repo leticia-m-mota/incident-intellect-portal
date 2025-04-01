@@ -307,27 +307,22 @@ export default function IncidentDetail() {
             </>
           ) : (
             /* Resolved Incident View */
-            <Tabs defaultValue="timeline">
+            <Tabs defaultValue="metrics">
               <TabsList>
-                <TabsTrigger value="timeline">Timeline</TabsTrigger>
                 <TabsTrigger value="metrics">Impact Metrics</TabsTrigger>
+                <TabsTrigger value="timeline">Timeline</TabsTrigger>
                 <TabsTrigger value="learnings">Learnings</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="timeline" className="mt-4">
-                <Card>
-                  <CardContent className="pt-6">
-                    <IncidentTimeline events={incident.timeline} />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
               <TabsContent value="metrics" className="mt-4">
                 <Card>
-                  <CardContent className="pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {incident.metrics ? (
-                        <>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Incident Impact</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {incident.metrics ? (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-4">
                             <div>
                               <h3 className="text-sm font-medium text-muted-foreground mb-1">
@@ -376,13 +371,67 @@ export default function IncidentDetail() {
                               </div>
                             )}
                           </div>
-                        </>
-                      ) : (
-                        <div className="col-span-2 py-8 text-center">
-                          <p className="text-muted-foreground">No metrics available for this incident</p>
                         </div>
-                      )}
-                    </div>
+
+                        <div className="pt-4 border-t">
+                          <h3 className="text-sm font-medium mb-3">Key Impact Indicators</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <Card className="bg-muted/30">
+                              <CardContent className="pt-6">
+                                <div className="text-center">
+                                  <h4 className="text-sm font-medium text-muted-foreground mb-1">User Impact</h4>
+                                  <p className="text-2xl font-bold">
+                                    {incident.metrics.affectedUsers ? 
+                                      (incident.metrics.affectedUsers > 10000 ? 'High' : 
+                                       incident.metrics.affectedUsers > 1000 ? 'Medium' : 'Low') : 
+                                      'N/A'}
+                                  </p>
+                                </div>
+                              </CardContent>
+                            </Card>
+                            
+                            <Card className="bg-muted/30">
+                              <CardContent className="pt-6">
+                                <div className="text-center">
+                                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Business Impact</h4>
+                                  <p className="text-2xl font-bold">
+                                    {incident.severity === 'critical' ? 'Severe' : 
+                                     incident.severity === 'high' ? 'Significant' : 
+                                     incident.severity === 'medium' ? 'Moderate' : 'Low'}
+                                  </p>
+                                </div>
+                              </CardContent>
+                            </Card>
+                            
+                            <Card className="bg-muted/30">
+                              <CardContent className="pt-6">
+                                <div className="text-center">
+                                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Time to Restore</h4>
+                                  <p className="text-2xl font-bold">
+                                    {incident.metrics.timeToResolve ? 
+                                      (incident.metrics.timeToResolve > 240 ? 'Slow' : 
+                                       incident.metrics.timeToResolve > 60 ? 'Medium' : 'Fast') : 
+                                      'N/A'}
+                                  </p>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="py-8 text-center">
+                        <p className="text-muted-foreground">No metrics available for this incident</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="timeline" className="mt-4">
+                <Card>
+                  <CardContent className="pt-6">
+                    <IncidentTimeline events={incident.timeline} />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -482,27 +531,82 @@ export default function IncidentDetail() {
               </Card>
             </>
           ) : (
-            /* Similar Incidents - Only for Resolved Incidents */
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Similar Incidents</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {similarIncidents && similarIncidents.length > 0 ? (
-                  <div className="space-y-3">
-                    {similarIncidents.map(inc => (
-                      <SimplifiedIncidentCard key={inc.id} incident={inc} />
-                    ))}
+            <>
+              {/* Impact Summary for Resolved Incidents */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Impact Summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground">Severity</h3>
+                      <div className="flex items-center mt-1">
+                        <IncidentSeverityBadge severity={incident.severity} />
+                        <span className="ml-2">{
+                          incident.severity === 'critical' ? 'Critical Impact' :
+                          incident.severity === 'high' ? 'Major Impact' :
+                          incident.severity === 'medium' ? 'Moderate Impact' : 'Minor Impact'
+                        }</span>
+                      </div>
+                    </div>
+                    
+                    {incident.metrics && (
+                      <>
+                        <div>
+                          <h3 className="text-sm font-medium text-muted-foreground">Incident Duration</h3>
+                          <p className="mt-1">
+                            {incident.metrics.timeToResolve ? 
+                              `${Math.floor(incident.metrics.timeToResolve / 60)}h ${incident.metrics.timeToResolve % 60}m` : 
+                              'Not available'}
+                          </p>
+                        </div>
+                        
+                        {incident.metrics.affectedUsers && (
+                          <div>
+                            <h3 className="text-sm font-medium text-muted-foreground">User Impact</h3>
+                            <p className="mt-1">{incident.metrics.affectedUsers.toLocaleString()} affected users</p>
+                          </div>
+                        )}
+                      </>
+                    )}
+                    
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground">Impacted Systems</h3>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {incident.impactedSystems.map(system => (
+                          <span key={system} className="px-2 py-0.5 bg-secondary text-xs rounded-full">
+                            {system}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-muted-foreground">
-                      No similar incidents found
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            
+              {/* Similar Incidents */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Similar Incidents</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {similarIncidents && similarIncidents.length > 0 ? (
+                    <div className="space-y-3">
+                      {similarIncidents.map(inc => (
+                        <SimplifiedIncidentCard key={inc.id} incident={inc} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4">
+                      <p className="text-muted-foreground">
+                        No similar incidents found
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </>
           )}
         </div>
       </div>

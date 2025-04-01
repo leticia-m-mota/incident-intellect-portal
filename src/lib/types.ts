@@ -20,6 +20,8 @@ export interface Incident {
     timeToResolve?: number; // in minutes
     affectedUsers?: number;
     serviceDowntime?: number; // in minutes
+    businessImpact?: 'critical' | 'significant' | 'moderate' | 'low';
+    costImpact?: number; // estimated financial impact in USD
   };
   integrations?: {
     jiraTicket?: string;
@@ -56,6 +58,12 @@ export interface IncidentMetrics {
     date: string;
     count: number;
   }>;
+  impactedUsers?: number;
+  totalDowntime?: number; // in minutes
+  averageTimeToAcknowledge?: number; // in minutes
+  averageTimeToResolve?: number; // in minutes
+  costImpact?: number; // estimated financial impact in USD
+  impactBySystem?: Record<string, number>; // incidents count by system
 }
 
 export interface UserNotification {

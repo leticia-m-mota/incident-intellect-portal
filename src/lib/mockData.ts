@@ -657,4 +657,18 @@ export const mockDataService = {
     await delay(400);
     return mockUsers.find(user => user.id === id);
   },
+  
+  // Add incident learning
+  addIncidentLearning: async (incidentId: string, learning: any) => {
+    await delay(500);
+    const incident = mockIncidents.find(inc => inc.id === incidentId);
+    if (!incident) throw new Error(`Incident with ID ${incidentId} not found`);
+    
+    if (!incident.learnings) {
+      incident.learnings = [];
+    }
+    
+    incident.learnings.push(learning);
+    return learning;
+  },
 };
