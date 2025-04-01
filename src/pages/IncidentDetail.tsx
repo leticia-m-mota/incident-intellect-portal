@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -7,7 +8,8 @@ import {
   AlertCircle,
   ListTodo,
   CheckCircle2,
-  Users
+  Users,
+  Send
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { IncidentSeverityBadge } from '@/components/incidents/IncidentSeverityBadge';
@@ -24,8 +26,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { mockDataService } from '@/lib/mockData';
 import { SimplifiedIncidentCard } from '@/components/incidents/SimplifiedIncidentCard';
-import { IncidentLearning } from '@/lib/types';
+import { IncidentLearning, TimelineEvent } from '@/lib/types';
 import { toast } from '@/hooks/use-toast';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 export default function IncidentDetail() {
   const { id } = useParams<{ id: string }>();
@@ -33,6 +36,8 @@ export default function IncidentDetail() {
   const queryClient = useQueryClient();
   const [commAssignee, setCommAssignee] = useState<string>("");
   const [pointAssignee, setPointAssignee] = useState<string>("");
+  const [updateMessage, setUpdateMessage] = useState("");
+  const [updateType, setUpdateType] = useState("update");
   
   const { data: incident, isLoading } = useQuery({
     queryKey: ['incident', id],
@@ -75,6 +80,40 @@ export default function IncidentDetail() {
     }
   });
   
+  // Add update mutation
+  const addUpdateMutation = useMutation({
+    mutationFn: async () => {
+      if (!id || !updateMessage.trim()) throw new Error('No incident ID or message provided');
+      
+      const newUpdate: TimelineEvent = {
+        id: `update-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        message: updateMessage.trim(),
+        type: updateType as 'update' | 'action' | 'notification' | 'resolution',
+        user: pointAssignee === 'user1' ? 'Sarah Johnson' : 
+              pointAssignee === 'user2' ? 'Alex Chen' : 
+              pointAssignee === 'user3' ? 'Michael Brown' : 'Anonymous User',
+      };
+      
+      return mockDataService.addIncidentTimelineEvent(id, newUpdate);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['incident', id] });
+      setUpdateMessage("");
+      toast({
+        title: 'Update submitted',
+        description: 'Your incident update has been added to the timeline.',
+      });
+    },
+    onError: () => {
+      toast({
+        title: 'Failed to add update',
+        description: 'There was an error adding your update. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  });
+  
   // Find similar incidents based on tags or impacted systems
   const similarIncidents = incidents?.filter(inc => 
     inc.id !== id && (
@@ -95,6 +134,29 @@ export default function IncidentDetail() {
   // Handle adding a new learning
   const handleAddLearning = (learning: Omit<IncidentLearning, 'id' | 'createdAt'>) => {
     addLearningMutation.mutate(learning);
+  };
+  
+  // Handle adding a new update
+  const handleAddUpdate = () => {
+    if (!updateMessage.trim()) {
+      toast({
+        title: 'Empty update',
+        description: 'Please enter an update message before submitting.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    addUpdateMutation.mutate();
+  };
+  
+  // Get initials for avatar
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase();
   };
   
   if (isLoading) {
@@ -153,7 +215,7 @@ export default function IncidentDetail() {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          {/* Incident Header - Simplified */}
+          {/* Incident Header with Assigned Team Members */}
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-2">
@@ -175,6 +237,82 @@ export default function IncidentDetail() {
                   Owner: {incident.ownerTeam}
                 </div>
               </div>
+              
+              {/* Assigned Team Members - Only shown for active incidents */}
+              {isActiveIncident && (
+                <div className="mt-4 border-t pt-4">
+                  <h3 className="text-sm font-medium mb-3">Assigned Team Members</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex items-center gap-3">
+                      <Select 
+                        value={commAssignee} 
+                        onValueChange={setCommAssignee}
+                      >
+                        <SelectTrigger className="w-[220px]">
+                          <SelectValue placeholder="Assign communications lead" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="user1">Sarah Johnson</SelectItem>
+                          <SelectItem value="user2">Alex Chen</SelectItem>
+                          <SelectItem value="user3">Michael Brown</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      {commAssignee && (
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8 bg-primary/20">
+                            <AvatarFallback className="text-primary">
+                              {commAssignee === 'user1' ? 'SJ' : 
+                               commAssignee === 'user2' ? 'AC' : 'MB'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="text-xs">
+                            <p className="font-medium">
+                              {commAssignee === 'user1' ? 'Sarah Johnson' : 
+                               commAssignee === 'user2' ? 'Alex Chen' : 'Michael Brown'}
+                            </p>
+                            <p className="text-muted-foreground">Communications Lead</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <Select 
+                        value={pointAssignee} 
+                        onValueChange={setPointAssignee}
+                      >
+                        <SelectTrigger className="w-[220px]">
+                          <SelectValue placeholder="Assign resolution lead" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="user1">Sarah Johnson</SelectItem>
+                          <SelectItem value="user2">Alex Chen</SelectItem>
+                          <SelectItem value="user3">Michael Brown</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      {pointAssignee && (
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8 bg-primary/20">
+                            <AvatarFallback className="text-primary">
+                              {pointAssignee === 'user1' ? 'SJ' : 
+                               pointAssignee === 'user2' ? 'AC' : 'MB'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="text-xs">
+                            <p className="font-medium">
+                              {pointAssignee === 'user1' ? 'Sarah Johnson' : 
+                               pointAssignee === 'user2' ? 'Alex Chen' : 'Michael Brown'}
+                            </p>
+                            <p className="text-muted-foreground">Resolution Lead</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
           
@@ -205,71 +343,58 @@ export default function IncidentDetail() {
                     </Button>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Assign Comms
-                      </label>
-                      <Select 
-                        value={commAssignee} 
-                        onValueChange={setCommAssignee}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Assign communications lead" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="user1">Sarah Johnson</SelectItem>
-                          <SelectItem value="user2">Alex Chen</SelectItem>
-                          <SelectItem value="user3">Michael Brown</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        Assign Point
-                      </label>
-                      <Select 
-                        value={pointAssignee} 
-                        onValueChange={setPointAssignee}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Assign resolution lead" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="user1">Sarah Johnson</SelectItem>
-                          <SelectItem value="user2">Alex Chen</SelectItem>
-                          <SelectItem value="user3">Michael Brown</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  
+                  {/* Update Section - Enhanced */}
                   <div className="mb-4">
-                    <label className="block text-sm font-medium mb-2">
-                      Add Update
-                    </label>
+                    <h3 className="text-sm font-medium mb-3">Send Update</h3>
                     <Textarea 
                       placeholder="Enter incident update or comment..."
                       className="mb-2"
                       rows={3}
+                      value={updateMessage}
+                      onChange={(e) => setUpdateMessage(e.target.value)}
                     />
-                    <div className="flex justify-between">
-                      <Select defaultValue="update">
+                    <div className="flex flex-col sm:flex-row gap-2 justify-between">
+                      <Select 
+                        defaultValue="update"
+                        value={updateType}
+                        onValueChange={setUpdateType}
+                      >
                         <SelectTrigger className="w-[180px]">
                           <SelectValue placeholder="Update type" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="update">Status Update</SelectItem>
                           <SelectItem value="action">Action Taken</SelectItem>
-                          <SelectItem value="investigation">Investigation</SelectItem>
+                          <SelectItem value="notification">Notification</SelectItem>
                           <SelectItem value="resolution">Resolution</SelectItem>
                         </SelectContent>
                       </Select>
                       
-                      <Button>Submit Update</Button>
+                      <Button 
+                        onClick={handleAddUpdate}
+                        disabled={!updateMessage.trim() || !pointAssignee}
+                        className="gap-2"
+                      >
+                        <Send size={16} />
+                        Send Update
+                      </Button>
                     </div>
+                    {!pointAssignee && (
+                      <p className="text-xs text-amber-500 mt-2">
+                        Please assign a resolution lead before sending updates
+                      </p>
+                    )}
                   </div>
+                </CardContent>
+              </Card>
+              
+              {/* Current Timeline */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Incident Timeline</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <IncidentTimeline events={incident.timeline} />
                 </CardContent>
               </Card>
             </>
@@ -359,7 +484,7 @@ export default function IncidentDetail() {
                 </CardContent>
               </Card>
               
-              {/* Team Members */}
+              {/* Team Members - minimal since they're now in the header */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
