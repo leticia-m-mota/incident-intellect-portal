@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PageTitle } from '@/components/common/PageTitle';
@@ -7,14 +8,13 @@ import { NotificationSettings } from '@/types/settings';
 import { toast } from '@/hooks/use-toast';
 import { UserNotification } from '@/lib/types';
 import { format, subDays } from 'date-fns';
-import { Bell, AlertTriangle, CheckCircle, MessageSquare, Info } from 'lucide-react';
 
 const severityLevels = [
-  { id: 'critical', name: 'Critical (SEV1)' },
-  { id: 'high', name: 'High (SEV2)' },
-  { id: 'medium', name: 'Medium (SEV3)' },
-  { id: 'low', name: 'Low (SEV4)' },
-  { id: 'info', name: 'Info (SEV5)' }
+  { id: 'critical', name: 'Severity 1 (Critical)' },
+  { id: 'high', name: 'Severity 2 (High)' },
+  { id: 'medium', name: 'Severity 3 (Medium)' },
+  { id: 'low', name: 'Severity 4 (Low)' },
+  { id: 'info', name: 'Severity 5 (Info)' }
 ];
 
 const incidentTypes = [
@@ -130,23 +130,6 @@ const generateRecentNotifications = (): UserNotification[] => {
   ];
 };
 
-const getNotificationIcon = (type: UserNotification['type']) => {
-  switch (type) {
-    case 'incident_new':
-      return <AlertTriangle className="h-5 w-5 text-red-500" />;
-    case 'incident_update':
-      return <Bell className="h-5 w-5 text-amber-500" />;
-    case 'incident_resolved':
-      return <CheckCircle className="h-5 w-5 text-green-500" />;
-    case 'mention':
-      return <MessageSquare className="h-5 w-5 text-blue-500" />;
-    case 'system':
-      return <Info className="h-5 w-5 text-slate-500" />;
-    default:
-      return <Bell className="h-5 w-5" />;
-  }
-};
-
 function NotificationsPage() {
   const [showPreferences, setShowPreferences] = useState(false);
   const [keyword, setKeyword] = useState('');
@@ -195,10 +178,10 @@ function NotificationsPage() {
 
   return (
     <MainLayout>
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <PageTitle 
           title="Notifications" 
-          description="Stay updated with your incident alerts and configure notification preferences" 
+          description="Stay updated with your incident alerts" 
         />
         
         <div className="mt-6">
@@ -224,32 +207,17 @@ function NotificationsPage() {
                   onClick={() => setShowPreferences(true)}
                   className="flex items-center text-sm font-medium text-primary hover:text-primary/80"
                 >
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    viewBox="0 0 20 20" 
-                    fill="currentColor" 
-                    className="w-4 h-4 mr-1"
-                  >
-                    <path 
-                      fillRule="evenodd" 
-                      d="M7.84 1.804A1 1 0 018.82 1h2.36a1 1 0 01.98.804l.331 1.652a6.993 6.993 0 011.929 1.115l1.598-.54a1 1 0 011.186.447l1.18 2.044a1 1 0 01-.205 1.251l-1.267 1.113a7.047 7.047 0 010 2.228l1.267 1.113a1 1 0 01.206 1.25l-1.18 2.045a1 1 0 01-1.187.447l-1.598-.54a6.993 6.993 0 01-1.93 1.115l-.33 1.652a1 1 0 01-.98.804H8.82a1 1 0 01-.98-.804l-.331-1.652a6.993 6.993 0 01-1.929-1.115l-1.598.54a1 1 0 01-1.186-.447l-1.18-2.044a1 1 0 01.205-1.251l1.267-1.114a7.05 7.05 0 010-2.227L1.821 7.773a1 1 0 01-.206-1.25l1.18-2.045a1 1 0 011.187-.447l1.598.54A6.993 6.993 0 017.51 3.455l.33-1.652zM10 13a3 3 0 100-6 3 3 0 000 6z" 
-                      clipRule="evenodd" 
-                    />
-                  </svg>
                   Notification Preferences
                 </button>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {notifications.length > 0 ? (
                   notifications.map((notification) => (
                     <div 
                       key={notification.id} 
-                      className={`bg-card border rounded-lg p-4 flex items-start gap-3 transition-colors ${!notification.read ? 'border-primary/50 bg-primary/5' : ''}`}
+                      className={`bg-card border rounded-lg p-3 flex items-start gap-3 transition-colors ${!notification.read ? 'border-primary/50 bg-primary/5' : ''}`}
                     >
-                      <div className="flex-shrink-0 mt-1">
-                        {getNotificationIcon(notification.type)}
-                      </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-sm text-foreground">
                           {notification.title}
