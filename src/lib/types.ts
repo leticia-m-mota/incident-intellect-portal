@@ -26,6 +26,15 @@ export interface Incident {
     slackChannel?: string;
     opsgenieAlert?: string;
   };
+  learnings?: IncidentLearning[];
+}
+
+export interface IncidentLearning {
+  id: string;
+  category: 'went_well' | 'to_improve' | 'action_item';
+  content: string;
+  createdBy: string;
+  createdAt: string;
 }
 
 export interface TimelineEvent {

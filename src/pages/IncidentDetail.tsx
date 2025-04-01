@@ -1,8 +1,7 @@
 
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   ArrowLeft,
   MessageSquare,
@@ -15,6 +14,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { IncidentSeverityBadge } from '@/components/incidents/IncidentSeverityBadge';
 import { IncidentStatusBadge } from '@/components/incidents/IncidentStatusBadge';
 import { IncidentTimeline } from '@/components/incidents/IncidentTimeline';
+import { IncidentLearningsSection } from '@/components/incidents/IncidentLearningsSection';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,10 +23,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { mockDataService } from '@/lib/mockData';
 import { SimplifiedIncidentCard } from '@/components/incidents/SimplifiedIncidentCard';
+import { IncidentLearning } from '@/lib/types';
+import { toast } from '@/hooks/use-toast';
 
 export default function IncidentDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [commAssignee, setCommAssignee] = useState<string>("");
   const [pointAssignee, setPointAssignee] = useState<string>("");
   
@@ -43,6 +46,32 @@ export default function IncidentDetail() {
   const { data: knowledgeArticles } = useQuery({
     queryKey: ['knowledgeArticles'],
     queryFn: mockDataService.getKnowledgeArticles,
+  });
+
+  // Add learning mutation
+  const addLearningMutation = useMutation({
+    mutationFn: async (learning: Omit<IncidentLearning, 'id' | 'createdAt'>) => {
+      if (!id) throw new Error('No incident ID provided');
+      
+      // In a real app, this would be an API call
+      const newLearning: IncidentLearning = {
+        ...learning,
+        id: `learning-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+      };
+      
+      return mockDataService.addIncidentLearning(id, newLearning);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['incident', id] });
+    },
+    onError: () => {
+      toast({
+        title: 'Failed to add learning',
+        description: 'There was an error adding your learning. Please try again.',
+        variant: 'destructive',
+      });
+    }
   });
   
   // Find similar incidents based on tags or impacted systems
@@ -61,6 +90,11 @@ export default function IncidentDetail() {
   
   // Check if incident is active
   const isActiveIncident = incident && ['open', 'investigating', 'identified', 'monitoring'].includes(incident.status);
+  
+  // Handle adding a new learning
+  const handleAddLearning = (learning: Omit<IncidentLearning, 'id' | 'createdAt'>) => {
+    addLearningMutation.mutate(learning);
+  };
   
   if (isLoading) {
     return (
@@ -356,27 +390,10 @@ export default function IncidentDetail() {
               <TabsContent value="learnings" className="mt-4">
                 <Card>
                   <CardContent className="pt-6">
-                    <div className="space-y-4">
-                      <h3 className="font-medium">What went well</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Team responded quickly and followed the incident response process effectively. 
-                        Communication was clear and timely. Automated recovery systems helped minimize impact.
-                      </p>
-                      
-                      <h3 className="font-medium">What could be improved</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Initial detection of the incident took longer than expected. 
-                        Some dependencies were not properly documented which extended resolution time.
-                      </p>
-                      
-                      <h3 className="font-medium">Action items</h3>
-                      <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-2">
-                        <li>Improve monitoring for the affected service</li>
-                        <li>Update dependency documentation</li>
-                        <li>Create runbook for similar incidents</li>
-                        <li>Schedule load testing to prevent recurrence</li>
-                      </ul>
-                    </div>
+                    <IncidentLearningsSection 
+                      learnings={incident.learnings} 
+                      onAddLearning={handleAddLearning}
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>
