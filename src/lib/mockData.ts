@@ -4,7 +4,9 @@ import {
   IncidentMetrics, 
   KnowledgeArticle, 
   UserNotification, 
-  User 
+  User,
+  TimelineEvent,
+  IncidentLearning
 } from './types';
 
 // Mock incident data
@@ -621,7 +623,9 @@ export const mockDataService = {
   
   getIncidentById: async (id: string) => {
     await delay(500);
-    return mockIncidents.find(incident => incident.id === id);
+    const incident = mockIncidents.find(incident => incident.id === id);
+    if (!incident) throw new Error(`Incident with ID ${id} not found`);
+    return { ...incident };
   },
   
   // Metrics
@@ -659,7 +663,7 @@ export const mockDataService = {
   },
   
   // Add incident learning
-  addIncidentLearning: async (incidentId: string, learning: any) => {
+  addIncidentLearning: async (incidentId: string, learning: IncidentLearning) => {
     await delay(500);
     const incident = mockIncidents.find(inc => inc.id === incidentId);
     if (!incident) throw new Error(`Incident with ID ${incidentId} not found`);
@@ -669,6 +673,18 @@ export const mockDataService = {
     }
     
     incident.learnings.push(learning);
-    return learning;
+    return { ...incident };
+  },
+  
+  // Add incident timeline event
+  addIncidentTimelineEvent: async (incidentId: string, event: TimelineEvent) => {
+    await delay(500);
+    const incident = mockIncidents.find(inc => inc.id === incidentId);
+    if (!incident) throw new Error(`Incident with ID ${incidentId} not found`);
+    
+    incident.timeline.push(event);
+    incident.updatedAt = new Date().toISOString();
+    
+    return { ...incident };
   },
 };
