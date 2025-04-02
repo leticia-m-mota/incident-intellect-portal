@@ -2,6 +2,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { format, startOfMonth, isAfter, compareDesc } from 'date-fns';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PageTitle } from '@/components/common/PageTitle';
 import { StatCard } from '@/components/common/StatCard';
@@ -23,25 +24,50 @@ export default function Index() {
     queryKey: ['metrics'],
     queryFn: mockDataService.getMetrics,
   });
+
+  // Get year and month for display
+  const today = new Date();
+  const currentMonthStart = startOfMonth(today);
+  const yearStart = new Date(today.getFullYear(), 0, 1);
+  const ytdText = `${format(yearStart, 'MMM dd yyyy')} until today`;
+  const currentMonthText = format(today, 'MMM yyyy');
   
-  // Get only critical and high severity incidents that are open
-  const criticalIncidents = incidents?.filter(
-    incident => (incident.severity === 'critical' || incident.severity === 'high') && 
-    ['open', 'investigating', 'identified', 'monitoring'].includes(incident.status)
-  ).sort((a, b) => {
-    // Sort by severity and then by creation date
-    const severityOrder = { critical: 0, high: 1 };
-    if (severityOrder[a.severity] !== severityOrder[b.severity]) {
-      return severityOrder[a.severity] - severityOrder[b.severity];
+  // Get only critical and high severity incidents from the current month
+  const currentMonthCriticalHighIncidents = incidents?.filter(
+    incident => {
+      const incidentDate = new Date(incident.createdAt);
+      return (incident.severity === 'critical' || incident.severity === 'high') && 
+        isAfter(incidentDate, currentMonthStart) &&
+        ['open', 'investigating', 'identified', 'monitoring'].includes(incident.status);
     }
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  ).sort((a, b) => {
+    // Sort by creation date (newest first)
+    return compareDesc(new Date(a.createdAt), new Date(b.createdAt));
   }).slice(0, 6);
   
-  // Format trend data for chart
-  const trendData = metrics?.incidentsOverTime.map(item => ({
-    date: item.date,
-    count: item.count,
-  })) || [];
+  // Get count of currently open critical and high incidents
+  const openCriticalHighCount = incidents?.filter(
+    incident => (incident.severity === 'critical' || incident.severity === 'high') && 
+      ['open', 'investigating', 'identified', 'monitoring'].includes(incident.status)
+  ).length || 0;
+  
+  // Format trend data for chart with current and previous year
+  const currentYearData = Array.from({ length: 12 }, (_, i) => ({
+    month: format(new Date(today.getFullYear(), i), 'MMM'),
+    count: Math.floor(Math.random() * 20) + 5, // Mock data for current year
+    lastYearCount: Math.floor(Math.random() * 15) + 3 // Mock data for last year
+  }));
+  
+  // Add forecast data for remaining months
+  const trendDataWithForecast = currentYearData.map(item => {
+    const monthIndex = new Date(Date.parse(`${item.month} 1, ${today.getFullYear()}`)).getMonth();
+    const isFuture = monthIndex > today.getMonth();
+    return {
+      ...item,
+      count: isFuture ? null : item.count,
+      forecast: isFuture ? Math.floor(Math.random() * 18) + 8 : null // Forecast for future months
+    };
+  });
   
   return (
     <MainLayout>
@@ -51,7 +77,7 @@ export default function Index() {
           description="Critical incident information at a glance"
         />
         
-        {/* Stats Overview - Simplified */}
+        {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           {isLoadingMetrics ? (
             Array(3).fill(0).map((_, i) => (
@@ -62,12 +88,11 @@ export default function Index() {
               <StatCard
                 title="Total Incidents"
                 value={metrics?.totalIncidents || 0}
-                description="Year to date"
+                description={ytdText}
               />
               <StatCard
                 title="Open Critical & High"
-                value={(criticalIncidents?.length || 0)}
-                description="Requiring attention"
+                value={openCriticalHighCount}
               />
               <StatCard
                 title="Mean Time to Resolve"
@@ -78,58 +103,59 @@ export default function Index() {
           )}
         </div>
         
-        {/* Critical Incidents */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Critical & High Incidents</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1 text-purple hover:text-purple-dark"
-                onClick={() => navigate('/incidents')}
-              >
-                View all
-              </Button>
-            </div>
-            
-            {isLoadingIncidents ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Array(4).fill(0).map((_, i) => (
-                  <Skeleton key={i} className="h-[180px] w-full" />
-                ))}
-              </div>
-            ) : criticalIncidents?.length === 0 ? (
-              <div className="bg-muted/50 rounded-lg p-8 text-center">
-                <h3 className="text-lg font-medium mb-2">All Clear!</h3>
-                <p className="text-muted-foreground">
-                  There are no critical or high severity incidents at this time.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {criticalIncidents?.map(incident => (
-                  <IncidentCard key={incident.id} incident={incident} />
-                ))}
-              </div>
-            )}
+        {/* Recent Critical & High Incidents Section */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Recent Critical & High Incidents ({currentMonthText})</h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1 text-purple hover:text-purple-dark"
+              onClick={() => navigate('/incidents')}
+            >
+              View all
+            </Button>
           </div>
           
-          <div>
-            <h2 className="text-lg font-semibold mb-4">Incident Trends</h2>
-            {isLoadingMetrics ? (
-              <Skeleton className="h-[340px] w-full" />
-            ) : (
-              <IncidentAreaChart 
-                title=""
-                data={trendData}
-                xAxisKey="date"
-                dataKeys={[
-                  { key: 'count', color: '#6E59A5', name: 'Incidents' }
-                ]}
-              />
-            )}
-          </div>
+          {isLoadingIncidents ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array(6).fill(0).map((_, i) => (
+                <Skeleton key={i} className="h-[180px] w-full" />
+              ))}
+            </div>
+          ) : currentMonthCriticalHighIncidents?.length === 0 ? (
+            <div className="bg-muted/50 rounded-lg p-8 text-center">
+              <h3 className="text-lg font-medium mb-2">All Clear!</h3>
+              <p className="text-muted-foreground">
+                There are no critical or high severity incidents this month.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {currentMonthCriticalHighIncidents?.map(incident => (
+                <IncidentCard key={incident.id} incident={incident} />
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* Incident Trends Chart */}
+        <div>
+          <h2 className="text-lg font-semibold mb-4">Incident Trends & Forecast ({today.getFullYear()})</h2>
+          {isLoadingMetrics ? (
+            <Skeleton className="h-[340px] w-full" />
+          ) : (
+            <IncidentAreaChart 
+              title=""
+              data={trendDataWithForecast}
+              xAxisKey="month"
+              dataKeys={[
+                { key: 'count', color: '#6E59A5', name: 'Current Year' },
+                { key: 'forecast', color: '#9B8DD4', name: 'Forecast' },
+                { key: 'lastYearCount', color: '#CCBFED', name: 'Last Year' }
+              ]}
+            />
+          )}
         </div>
       </div>
     </MainLayout>
