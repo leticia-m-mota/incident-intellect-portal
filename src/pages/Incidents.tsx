@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -23,7 +22,6 @@ import { format, compareDesc } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 export default function Incidents() {
   const navigate = useNavigate();
@@ -152,8 +150,16 @@ export default function Incidents() {
       
     const matchesSeverity = filterSeverity === 'all' || incident.severity === filterSeverity;
     const matchesStatus = filterStatus === 'all' || incident.status === filterStatus;
-    const matchesType = filterType === 'all' || incident.type === filterType;
-    const matchesBusinessUnit = filterBusinessUnit === 'all' || incident.businessUnit === filterBusinessUnit;
+    
+    // Instead of incident.type, check for tag with the filtered type
+    const matchesType = filterType === 'all' || 
+                        incident.tags.some(tag => tag.toLowerCase() === filterType.toLowerCase());
+    
+    // Instead of incident.businessUnit, we'll assume that the business unit might be in ownerTeam or tags
+    const matchesBusinessUnit = filterBusinessUnit === 'all' || 
+                                incident.ownerTeam.toLowerCase().includes(filterBusinessUnit.toLowerCase()) ||
+                                incident.tags.some(tag => tag.toLowerCase().includes(filterBusinessUnit.toLowerCase()));
+    
     const matchesTeam = filterTeam === 'all' || incident.ownerTeam === filterTeam;
     
     return matchesSearch && matchesSeverity && matchesStatus && matchesType && 
