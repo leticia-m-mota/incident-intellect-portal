@@ -11,7 +11,7 @@ import { IncidentAreaChart } from '@/components/charts/IncidentAreaChart';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { mockDataService } from '@/lib/mockData';
-import { ChartContainer, ChartLegendContent } from '@/components/ui/chart';
+import { ChartContainer } from '@/components/ui/chart';
 
 export default function Index() {
   const navigate = useNavigate();
@@ -151,9 +151,9 @@ export default function Index() {
           ) : (
             <ChartContainer 
               config={{
-                currentYear: { label: "Current Year", color: "#6E59A5" },
+                count: { label: "Current Year", color: "#6E59A5" },
                 forecast: { label: "Forecast", color: "#9B8DD4" },
-                lastYear: { label: "Last Year", color: "#CCBFED" }
+                lastYearCount: { label: "Last Year", color: "#CCBFED" }
               }}
               className="h-[340px]"
             >
@@ -167,19 +167,26 @@ export default function Index() {
                   { key: 'lastYearCount', color: '#CCBFED', name: 'Last Year' }
                 ]}
               />
+              
+              {/* Chart Legend is now inside the ChartContainer */}
+              <div className="flex justify-center mt-4">
+                <div className="flex gap-6 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 bg-[#6E59A5] rounded-sm"></div>
+                    <span>Current Year</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 bg-[#9B8DD4] rounded-sm"></div>
+                    <span>Forecast</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 bg-[#CCBFED] rounded-sm"></div>
+                    <span>Last Year</span>
+                  </div>
+                </div>
+              </div>
             </ChartContainer>
           )}
-          
-          {/* Chart Legend */}
-          <div className="flex justify-center mt-4">
-            <ChartLegendContent
-              payload={[
-                { value: 'count', color: '#6E59A5', dataKey: 'currentYear' },
-                { value: 'forecast', color: '#9B8DD4', dataKey: 'forecast' },
-                { value: 'lastYearCount', color: '#CCBFED', dataKey: 'lastYear' }
-              ]}
-            />
-          </div>
         </div>
       </div>
     </MainLayout>
