@@ -12,7 +12,6 @@ import { PageTitle } from '@/components/common/PageTitle';
 import { StatCard } from '@/components/common/StatCard';
 import { IncidentTable } from '@/components/incidents/IncidentTable';
 import { IncidentCard } from '@/components/incidents/IncidentCard';
-import { SampleIncidents } from '@/components/incidents/SampleIncidents';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { mockDataService } from '@/lib/mockData';
@@ -28,6 +27,7 @@ export default function Incidents() {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   
+  // Search and filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSeverity, setFilterSeverity] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -51,6 +51,7 @@ export default function Incidents() {
     queryFn: mockDataService.getMetrics,
   });
   
+  // Calculate incident stats
   const activeIncidents = incidents?.filter(
     incident => ['open', 'investigating', 'identified', 'monitoring'].includes(incident.status)
   ).length || 0;
@@ -69,6 +70,7 @@ export default function Incidents() {
     }
   ).length || 0;
 
+  // Sample data for filters
   const incidentTypes = [
     { label: 'All Types', value: 'all' },
     { label: 'Dataset', value: 'dataset' },
@@ -99,6 +101,7 @@ export default function Incidents() {
     { label: 'Custom', value: 'custom' },
   ];
 
+  // Reset filters
   const resetFilters = () => {
     setSearchTerm('');
     setFilterSeverity('all');
@@ -113,6 +116,7 @@ export default function Incidents() {
     });
   };
   
+  // Format date for display
   const formatDateRange = () => {
     if (timeframe === '7days') return 'Last 7 Days';
     if (timeframe === 'month') return 'Last Month';
@@ -123,6 +127,7 @@ export default function Incidents() {
     return 'Select Date Range';
   };
   
+  // Get active filters count
   const getActiveFiltersCount = () => {
     let count = 0;
     if (searchTerm.trim() !== '') count++;
@@ -135,6 +140,7 @@ export default function Incidents() {
     return count;
   };
 
+  // Filter incidents
   const filteredIncidents = incidents?.filter(incident => {
     const matchesSearch = searchTerm === '' || 
       incident.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -145,9 +151,11 @@ export default function Incidents() {
     const matchesSeverity = filterSeverity === 'all' || incident.severity === filterSeverity;
     const matchesStatus = filterStatus === 'all' || incident.status === filterStatus;
     
+    // Instead of incident.type, check for tag with the filtered type
     const matchesType = filterType === 'all' || 
                         incident.tags.some(tag => tag.toLowerCase() === filterType.toLowerCase());
     
+    // Instead of incident.businessUnit, we'll assume that the business unit might be in ownerTeam or tags
     const matchesBusinessUnit = filterBusinessUnit === 'all' || 
                                 incident.ownerTeam.toLowerCase().includes(filterBusinessUnit.toLowerCase()) ||
                                 incident.tags.some(tag => tag.toLowerCase().includes(filterBusinessUnit.toLowerCase()));
@@ -157,6 +165,7 @@ export default function Incidents() {
     return matchesSearch && matchesSeverity && matchesStatus && matchesType && 
            matchesBusinessUnit && matchesTeam;
   }).sort((a, b) => {
+    // Sort by creation date (newest first)
     return compareDesc(new Date(a.createdAt), new Date(b.createdAt));
   }) || [];
   
@@ -250,6 +259,7 @@ export default function Incidents() {
         </div>
       </div>
       
+      {/* Unified Search and Filter Bar */}
       <div className="mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
@@ -363,8 +373,7 @@ export default function Incidents() {
         </Card>
       )}
       
-      <SampleIncidents />
-      
+      {/* Stats Overview - Simplified */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <StatCard
           title="Active Incidents"
@@ -380,6 +389,7 @@ export default function Incidents() {
         />
       </div>
       
+      {/* Main Incidents Display */}
       <div className="mt-6">
         {isLoading ? (
           viewMode === 'list' ? (
