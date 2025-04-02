@@ -1,4 +1,3 @@
-
 export type SeverityLevel = 'critical' | 'high' | 'medium' | 'low';
 export type IncidentStatus = 'open' | 'investigating' | 'identified' | 'monitoring' | 'resolved' | 'closed';
 
@@ -99,4 +98,15 @@ export interface KnowledgeArticle {
   createdAt: string;
   updatedAt: string;
   author: string;
+}
+
+export interface MockDataService {
+  getIncidents: () => Promise<Incident[]>;
+  getIncidentById: (id: string) => Promise<Incident>;
+  getMetrics: () => Promise<IncidentMetrics>;
+  getNotifications: () => Promise<UserNotification[]>;
+  getKnowledgeArticles: () => Promise<KnowledgeArticle[]>;
+  getUsers: () => Promise<User[]>;
+  addIncidentLearning: (incidentId: string, learning: IncidentLearning) => Promise<Incident>;
+  addIncidentTimelineEvent: (incidentId: string, event: TimelineEvent) => Promise<Incident>;
 }
