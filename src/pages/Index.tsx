@@ -157,34 +157,37 @@ export default function Index() {
               }}
               className="h-[340px]"
             >
-              <IncidentAreaChart 
-                title=""
-                data={trendDataWithForecast}
-                xAxisKey="month"
-                dataKeys={[
-                  { key: 'count', color: '#6E59A5', name: 'Current Year' },
-                  { key: 'forecast', color: '#9B8DD4', name: 'Forecast', strokeDasharray: "5 5" },
-                  { key: 'lastYearCount', color: '#CCBFED', name: 'Last Year' }
-                ]}
-              />
-              
-              {/* Chart Legend is now inside the ChartContainer */}
-              <div className="flex justify-center mt-4">
-                <div className="flex gap-6 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 bg-[#6E59A5] rounded-sm"></div>
-                    <span>Current Year</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 bg-[#9B8DD4] rounded-sm"></div>
-                    <span>Forecast</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 bg-[#CCBFED] rounded-sm"></div>
-                    <span>Last Year</span>
+              {/* Wrap multiple elements in a single React fragment */}
+              <>
+                <IncidentAreaChart 
+                  title=""
+                  data={trendDataWithForecast}
+                  xAxisKey="month"
+                  dataKeys={[
+                    { key: 'count', color: '#6E59A5', name: 'Current Year' },
+                    { key: 'forecast', color: '#9B8DD4', name: 'Forecast', strokeDasharray: "5 5" },
+                    { key: 'lastYearCount', color: '#CCBFED', name: 'Last Year' }
+                  ]}
+                />
+                
+                {/* Chart Legend is now inside the ChartContainer */}
+                <div className="flex justify-center mt-4">
+                  <div className="flex gap-6 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 bg-[#6E59A5] rounded-sm"></div>
+                      <span>Current Year</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 bg-[#9B8DD4] rounded-sm"></div>
+                      <span>Forecast</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 bg-[#CCBFED] rounded-sm"></div>
+                      <span>Last Year</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </>
             </ChartContainer>
           )}
         </div>
