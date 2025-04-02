@@ -11,6 +11,7 @@ import { IncidentAreaChart } from '@/components/charts/IncidentAreaChart';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { mockDataService } from '@/lib/mockData';
+import { ChartContainer, ChartLegendContent } from '@/components/ui/chart';
 
 export default function Index() {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ export default function Index() {
   const today = new Date();
   const currentMonthStart = startOfMonth(today);
   const yearStart = new Date(today.getFullYear(), 0, 1);
-  const ytdText = `${format(yearStart, 'MMM dd yyyy')} until today`;
+  const ytdText = `${format(yearStart, 'MMM d yyyy')} until today`;
   const currentMonthText = format(today, 'MMM yyyy');
   
   // Get only critical and high severity incidents from the current month
@@ -37,13 +38,12 @@ export default function Index() {
     incident => {
       const incidentDate = new Date(incident.createdAt);
       return (incident.severity === 'critical' || incident.severity === 'high') && 
-        isAfter(incidentDate, currentMonthStart) &&
-        ['open', 'investigating', 'identified', 'monitoring'].includes(incident.status);
+        isAfter(incidentDate, currentMonthStart);
     }
   ).sort((a, b) => {
     // Sort by creation date (newest first)
     return compareDesc(new Date(a.createdAt), new Date(b.createdAt));
-  }).slice(0, 6);
+  }).slice(0, 5);
   
   // Get count of currently open critical and high incidents
   const openCriticalHighCount = incidents?.filter(
@@ -68,6 +68,9 @@ export default function Index() {
       forecast: isFuture ? Math.floor(Math.random() * 18) + 8 : null // Forecast for future months
     };
   });
+
+  // Determine if there's an active critical situation
+  const hasCriticalSituation = openCriticalHighCount > 0;
   
   return (
     <MainLayout>
@@ -88,16 +91,17 @@ export default function Index() {
               <StatCard
                 title="Total Incidents"
                 value={metrics?.totalIncidents || 0}
-                description={ytdText}
+                description={`YTD (${ytdText})`}
               />
               <StatCard
-                title="Open Critical & High"
+                title="Open Critical & High Incidents Right Now"
                 value={openCriticalHighCount}
+                className={hasCriticalSituation ? "bg-red-50 border-red-200" : ""}
               />
               <StatCard
                 title="Mean Time to Resolve"
                 value={`${Math.round((metrics?.mttr || 0) / 60)} hrs`}
-                description="Average resolution time"
+                description={`(p.80 resolution time) YTD (${ytdText})`}
               />
             </>
           )}
@@ -119,7 +123,7 @@ export default function Index() {
           
           {isLoadingIncidents ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array(6).fill(0).map((_, i) => (
+              {Array(5).fill(0).map((_, i) => (
                 <Skeleton key={i} className="h-[180px] w-full" />
               ))}
             </div>
@@ -127,7 +131,7 @@ export default function Index() {
             <div className="bg-muted/50 rounded-lg p-8 text-center">
               <h3 className="text-lg font-medium mb-2">All Clear!</h3>
               <p className="text-muted-foreground">
-                There are no critical or high severity incidents this month.
+                There are no critical or high severity incidents this month ({currentMonthText}).
               </p>
             </div>
           ) : (
@@ -145,17 +149,37 @@ export default function Index() {
           {isLoadingMetrics ? (
             <Skeleton className="h-[340px] w-full" />
           ) : (
-            <IncidentAreaChart 
-              title=""
-              data={trendDataWithForecast}
-              xAxisKey="month"
-              dataKeys={[
-                { key: 'count', color: '#6E59A5', name: 'Current Year' },
-                { key: 'forecast', color: '#9B8DD4', name: 'Forecast' },
-                { key: 'lastYearCount', color: '#CCBFED', name: 'Last Year' }
+            <ChartContainer 
+              config={{
+                currentYear: { label: "Current Year", color: "#6E59A5" },
+                forecast: { label: "Forecast", color: "#9B8DD4" },
+                lastYear: { label: "Last Year", color: "#CCBFED" }
+              }}
+              className="h-[340px]"
+            >
+              <IncidentAreaChart 
+                title=""
+                data={trendDataWithForecast}
+                xAxisKey="month"
+                dataKeys={[
+                  { key: 'count', color: '#6E59A5', name: 'Current Year' },
+                  { key: 'forecast', color: '#9B8DD4', name: 'Forecast', strokeDasharray: "5 5" },
+                  { key: 'lastYearCount', color: '#CCBFED', name: 'Last Year' }
+                ]}
+              />
+            </ChartContainer>
+          )}
+          
+          {/* Chart Legend */}
+          <div className="flex justify-center mt-4">
+            <ChartLegendContent
+              payload={[
+                { value: 'count', color: '#6E59A5', dataKey: 'currentYear' },
+                { value: 'forecast', color: '#9B8DD4', dataKey: 'forecast' },
+                { value: 'lastYearCount', color: '#CCBFED', dataKey: 'lastYear' }
               ]}
             />
-          )}
+          </div>
         </div>
       </div>
     </MainLayout>

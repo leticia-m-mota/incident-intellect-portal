@@ -9,12 +9,20 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from 'recharts';
+
+interface DataKey {
+  key: string;
+  color: string;
+  name: string;
+  strokeDasharray?: string;
+}
 
 interface IncidentAreaChartProps {
   title: string;
   data: Array<Record<string, any>>;
-  dataKeys: Array<{ key: string, color: string, name: string }>;
+  dataKeys: Array<DataKey>;
   xAxisKey: string;
   className?: string;
 }
@@ -53,9 +61,10 @@ export function IncidentAreaChart({
                   type="monotone"
                   dataKey={dataKey.key}
                   name={dataKey.name}
-                  stackId="1"
+                  stackId={dataKey.key === 'lastYearCount' ? undefined : "1"}
                   stroke={dataKey.color}
-                  fill={`${dataKey.color}80`}
+                  fill={dataKey.key === 'lastYearCount' ? "transparent" : `${dataKey.color}80`}
+                  strokeDasharray={dataKey.strokeDasharray}
                 />
               ))}
             </AreaChart>
