@@ -5,8 +5,7 @@ import {
   List, 
   LayoutGrid, 
   Plus,
-  AlertCircle,
-  CheckCircle2
+  Search
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -14,22 +13,24 @@ import { PageTitle } from '@/components/common/PageTitle';
 import { StatCard } from '@/components/common/StatCard';
 import { IncidentTable } from '@/components/incidents/IncidentTable';
 import { IncidentCard } from '@/components/incidents/IncidentCard';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { mockDataService } from '@/lib/mockData';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
+import { format, compareDesc } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 export default function Incidents() {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   
   // Search and filter states
+  const [searchTerm, setSearchTerm] = useState('');
   const [filterSeverity, setFilterSeverity] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
@@ -104,6 +105,7 @@ export default function Incidents() {
 
   // Reset filters
   const resetFilters = () => {
+    setSearchTerm('');
     setFilterSeverity('all');
     setFilterStatus('all');
     setFilterType('all');
@@ -130,6 +132,7 @@ export default function Incidents() {
   // Get active filters count
   const getActiveFiltersCount = () => {
     let count = 0;
+    if (searchTerm.trim() !== '') count++;
     if (filterSeverity !== 'all') count++;
     if (filterStatus !== 'all') count++;
     if (filterType !== 'all') count++;
@@ -138,6 +141,27 @@ export default function Incidents() {
     if (timeframe !== 'month') count++;
     return count;
   };
+
+  // Filter incidents
+  const filteredIncidents = incidents?.filter(incident => {
+    const matchesSearch = searchTerm === '' || 
+      incident.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      incident.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      incident.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      incident.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+    const matchesSeverity = filterSeverity === 'all' || incident.severity === filterSeverity;
+    const matchesStatus = filterStatus === 'all' || incident.status === filterStatus;
+    const matchesType = filterType === 'all' || incident.type === filterType;
+    const matchesBusinessUnit = filterBusinessUnit === 'all' || incident.businessUnit === filterBusinessUnit;
+    const matchesTeam = filterTeam === 'all' || incident.ownerTeam === filterTeam;
+    
+    return matchesSearch && matchesSeverity && matchesStatus && matchesType && 
+           matchesBusinessUnit && matchesTeam;
+  }).sort((a, b) => {
+    // Sort by creation date (newest first)
+    return compareDesc(new Date(a.createdAt), new Date(b.createdAt));
+  }) || [];
   
   return (
     <MainLayout>
@@ -229,6 +253,57 @@ export default function Incidents() {
         </div>
       </div>
       
+      {/* Unified Search and Filter Bar */}
+      <div className="mb-6">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search incidents by ID, title, or tags..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          
+          <div className="flex gap-2 flex-wrap">
+            <Select
+              value={filterStatus}
+              onValueChange={setFilterStatus}
+            >
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="open">Open</SelectItem>
+                <SelectItem value="investigating">Investigating</SelectItem>
+                <SelectItem value="identified">Identified</SelectItem>
+                <SelectItem value="monitoring">Monitoring</SelectItem>
+                <SelectItem value="resolved">Resolved</SelectItem>
+                <SelectItem value="closed">Closed</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select
+              value={filterSeverity}
+              onValueChange={setFilterSeverity}
+            >
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Severity" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Severities</SelectItem>
+                <SelectItem value="critical">Critical</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+      
       {showFilters && (
         <Card className="mb-6">
           <CardContent className="pt-6">
@@ -287,47 +362,6 @@ export default function Incidents() {
                   </SelectContent>
                 </Select>
               </div>
-              
-              <div>
-                <label className="text-sm font-medium mb-2 block">Severity</label>
-                <Select
-                  value={filterSeverity}
-                  onValueChange={setFilterSeverity}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Filter by severity" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Severities</SelectItem>
-                    <SelectItem value="critical">Severity 1 (Critical)</SelectItem>
-                    <SelectItem value="high">Severity 2 (High)</SelectItem>
-                    <SelectItem value="medium">Severity 3 (Medium)</SelectItem>
-                    <SelectItem value="low">Severity 4 (Low)</SelectItem>
-                    <SelectItem value="info">Severity 5 (Info)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium mb-2 block">Status</label>
-                <Select
-                  value={filterStatus}
-                  onValueChange={setFilterStatus}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="open">Open</SelectItem>
-                    <SelectItem value="investigating">Investigating</SelectItem>
-                    <SelectItem value="identified">Identified</SelectItem>
-                    <SelectItem value="monitoring">Monitoring</SelectItem>
-                    <SelectItem value="resolved">Resolved</SelectItem>
-                    <SelectItem value="closed">Closed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -349,93 +383,42 @@ export default function Incidents() {
         />
       </div>
       
-      <Tabs defaultValue="all">
-        <TabsList>
-          <TabsTrigger value="all">All Incidents</TabsTrigger>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="resolved">Resolved</TabsTrigger>
-        </TabsList>
-        
-        <div className="mt-6">
-          <TabsContent value="all">
-            {isLoading ? (
-              viewMode === 'list' ? (
-                <Skeleton className="h-[500px] w-full" />
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Array(6).fill(0).map((_, i) => (
-                    <Skeleton key={i} className="h-[200px] w-full" />
-                  ))}
-                </div>
-              )
-            ) : viewMode === 'list' ? (
-              <IncidentTable incidents={incidents || []} />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {incidents?.map(incident => (
-                  <IncidentCard key={incident.id} incident={incident} />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="active">
-            {isLoading ? (
-              viewMode === 'list' ? (
-                <Skeleton className="h-[500px] w-full" />
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Array(3).fill(0).map((_, i) => (
-                    <Skeleton key={i} className="h-[200px] w-full" />
-                  ))}
-                </div>
-              )
-            ) : viewMode === 'list' ? (
-              <IncidentTable 
-                incidents={incidents?.filter(incident => 
-                  ['open', 'investigating', 'identified', 'monitoring'].includes(incident.status)
-                ) || []} 
-              />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {incidents?.filter(incident => 
-                  ['open', 'investigating', 'identified', 'monitoring'].includes(incident.status)
-                ).map(incident => (
-                  <IncidentCard key={incident.id} incident={incident} />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="resolved">
-            {isLoading ? (
-              viewMode === 'list' ? (
-                <Skeleton className="h-[500px] w-full" />
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Array(3).fill(0).map((_, i) => (
-                    <Skeleton key={i} className="h-[200px] w-full" />
-                  ))}
-                </div>
-              )
-            ) : viewMode === 'list' ? (
-              <IncidentTable 
-                incidents={incidents?.filter(incident => 
-                  ['resolved', 'closed'].includes(incident.status)
-                ) || []} 
-              />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {incidents?.filter(incident => 
-                  ['resolved', 'closed'].includes(incident.status)
-                ).map(incident => (
-                  <IncidentCard key={incident.id} incident={incident} />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </div>
-      </Tabs>
+      {/* Main Incidents Display */}
+      <div className="mt-6">
+        {isLoading ? (
+          viewMode === 'list' ? (
+            <Skeleton className="h-[500px] w-full" />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array(6).fill(0).map((_, i) => (
+                <Skeleton key={i} className="h-[200px] w-full" />
+              ))}
+            </div>
+          )
+        ) : filteredIncidents.length === 0 ? (
+          <div className="bg-muted/50 rounded-lg p-8 text-center">
+            <h3 className="text-lg font-medium mb-2">No incidents found</h3>
+            <p className="text-muted-foreground">
+              Try adjusting your search or filters to find what you're looking for.
+            </p>
+            <Button 
+              variant="outline" 
+              onClick={resetFilters}
+              className="mt-4"
+            >
+              Reset All Filters
+            </Button>
+          </div>
+        ) : viewMode === 'list' ? (
+          <IncidentTable incidents={filteredIncidents} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredIncidents.map(incident => (
+              <IncidentCard key={incident.id} incident={incident} />
+            ))}
+          </div>
+        )}
+      </div>
     </MainLayout>
   );
 }

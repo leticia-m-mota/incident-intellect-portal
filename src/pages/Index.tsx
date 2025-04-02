@@ -107,41 +107,43 @@ export default function Index() {
           )}
         </div>
         
-        {/* Recent Critical & High Incidents Section */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Recent Critical & High Incidents ({currentMonthText})</h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-1 text-purple hover:text-purple-dark"
-              onClick={() => navigate('/incidents')}
-            >
-              View all
-            </Button>
+        {/* Recent Critical & High Incidents Section - Only show if there are open critical/high incidents */}
+        {hasCriticalSituation && (
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Recent Critical & High Incidents ({currentMonthText})</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 text-purple hover:text-purple-dark"
+                onClick={() => navigate('/incidents')}
+              >
+                View all
+              </Button>
+            </div>
+            
+            {isLoadingIncidents ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {Array(5).fill(0).map((_, i) => (
+                  <Skeleton key={i} className="h-[180px] w-full" />
+                ))}
+              </div>
+            ) : currentMonthCriticalHighIncidents?.length === 0 ? (
+              <div className="bg-muted/50 rounded-lg p-8 text-center">
+                <h3 className="text-lg font-medium mb-2">All Clear!</h3>
+                <p className="text-muted-foreground">
+                  There are no critical or high severity incidents this month ({currentMonthText}).
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {currentMonthCriticalHighIncidents?.map(incident => (
+                  <IncidentCard key={incident.id} incident={incident} />
+                ))}
+              </div>
+            )}
           </div>
-          
-          {isLoadingIncidents ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array(5).fill(0).map((_, i) => (
-                <Skeleton key={i} className="h-[180px] w-full" />
-              ))}
-            </div>
-          ) : currentMonthCriticalHighIncidents?.length === 0 ? (
-            <div className="bg-muted/50 rounded-lg p-8 text-center">
-              <h3 className="text-lg font-medium mb-2">All Clear!</h3>
-              <p className="text-muted-foreground">
-                There are no critical or high severity incidents this month ({currentMonthText}).
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {currentMonthCriticalHighIncidents?.map(incident => (
-                <IncidentCard key={incident.id} incident={incident} />
-              ))}
-            </div>
-          )}
-        </div>
+        )}
         
         {/* Incident Trends Chart */}
         <div>
