@@ -4,13 +4,19 @@ import { useQuery } from '@tanstack/react-query';
 import { 
   BarChart3, 
   Clock, 
-  Calendar, 
+  Calendar,
   PieChart,
-  BarChart,
-  TrendingUp,
   Filter,
+  Download,
   SlidersHorizontal,
-  Download
+  Bell,
+  CheckCircle,
+  AlertCircle,
+  Users,
+  TrendingUp,
+  ArrowDown,
+  ArrowUp,
+  Target
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PageTitle } from '@/components/common/PageTitle';
@@ -35,10 +41,10 @@ import { IncidentBarChart } from '@/components/charts/IncidentBarChart';
 import { IncidentPieChart } from '@/components/charts/IncidentPieChart';
 import { IncidentAreaChart } from '@/components/charts/IncidentAreaChart';
 import { mockDataService } from '@/lib/mockData';
-import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/use-toast';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function Analytics() {
   // Data filters
@@ -50,11 +56,11 @@ export default function Analytics() {
     from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
     to: new Date(),
   });
-  const [severityRange, setSeverityRange] = useState([1, 5]);
+  const [selectedSeverities, setSelectedSeverities] = useState([1, 2, 3, 4, 5]);
   const [showFilters, setShowFilters] = useState(false);
   
   const { data: metrics } = useQuery({
-    queryKey: ['metrics'],
+    queryKey: ['metrics', timeframe, businessUnit, team, incidentType, selectedSeverities],
     queryFn: mockDataService.getMetrics,
   });
   
@@ -101,11 +107,18 @@ export default function Analytics() {
   ];
   
   const timeFrames = [
-    { label: 'Week', value: 'week' },
-    { label: 'Month', value: 'month' },
-    { label: 'Quarter', value: 'quarter' },
-    { label: 'Year', value: 'year' },
+    { label: 'Last 7 Days', value: 'week' },
+    { label: 'Last Month', value: 'month' },
+    { label: 'Last Year', value: 'year' },
     { label: 'Custom', value: 'custom' },
+  ];
+  
+  const severityLevels = [
+    { id: 1, label: 'SEV1 (Critical)' },
+    { id: 2, label: 'SEV2 (High)' },
+    { id: 3, label: 'SEV3 (Medium)' },
+    { id: 4, label: 'SEV4 (Low)' },
+    { id: 5, label: 'SEV5 (Info)' },
   ];
   
   const incidentsByTeam = [
@@ -148,6 +161,30 @@ export default function Analytics() {
     { name: 'Search', value: 5, color: '#8E9196' },
     { name: 'Other', value: 4, color: '#F6F6F7' },
   ];
+
+  const acknowledgeTimeData = [
+    { team: 'Platform', time: 5 },
+    { team: 'Frontend', time: 8 },
+    { team: 'Backend', time: 4 },
+    { team: 'Mobile', time: 10 },
+    { team: 'DevOps', time: 3 },
+  ];
+
+  const reportTimeData = [
+    { severity: 'SEV1', time: 2 },
+    { severity: 'SEV2', time: 5 },
+    { severity: 'SEV3', time: 12 },
+    { severity: 'SEV4', time: 45 },
+    { severity: 'SEV5', time: 120 },
+  ];
+
+  const complianceData = [
+    { slo: 'Uptime (99.9%)', compliance: 99.93 },
+    { slo: 'Response Time (200ms)', compliance: 98.7 },
+    { slo: 'Critical Resolution (4h)', compliance: 92.3 },
+    { slo: 'P1 Acknowledgement (15m)', compliance: 95.1 },
+    { slo: 'P2 Resolution (24h)', compliance: 97.8 },
+  ];
   
   // Reset filters
   const resetFilters = () => {
@@ -159,7 +196,7 @@ export default function Analytics() {
       from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
       to: new Date(),
     });
-    setSeverityRange([1, 5]);
+    setSelectedSeverities([1, 2, 3, 4, 5]);
   };
   
   // Format date for display
@@ -175,14 +212,23 @@ export default function Analytics() {
     if (team !== 'all') count++;
     if (incidentType !== 'all') count++;
     if (timeframe !== 'month') count++;
-    if (severityRange[0] !== 1 || severityRange[1] !== 5) count++;
+    if (selectedSeverities.length !== 5) count++;
     return count;
+  };
+
+  // Toggle severity selection
+  const toggleSeverity = (severityId: number) => {
+    setSelectedSeverities(prev => {
+      if (prev.includes(severityId)) {
+        return prev.filter(id => id !== severityId);
+      } else {
+        return [...prev, severityId].sort();
+      }
+    });
   };
 
   // Export data to CSV
   const exportToCSV = () => {
-    // In a real application, this would generate a CSV file with the filtered data
-    // For this example, we'll just show a toast message
     toast({
       title: "Export Started",
       description: "Your analytics data is being exported to CSV format",
@@ -323,20 +369,23 @@ export default function Analytics() {
                 </div>
                 
                 <div className="md:col-span-3">
-                  <label className="text-sm font-medium mb-2 block">Severity Range (SEV{severityRange[0]} - SEV{severityRange[1]})</label>
-                  <div className="px-2">
-                    <Slider
-                      value={severityRange}
-                      min={1}
-                      max={5}
-                      step={1}
-                      onValueChange={setSeverityRange}
-                      className="my-4"
-                    />
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Most Critical (SEV1)</span>
-                      <span>Less Critical (SEV5)</span>
-                    </div>
+                  <label className="text-sm font-medium mb-2 block">Severity Levels</label>
+                  <div className="flex flex-wrap gap-3 mt-2">
+                    {severityLevels.map((severity) => (
+                      <div key={severity.id} className="flex items-center gap-2">
+                        <Checkbox 
+                          id={`sev-${severity.id}`} 
+                          checked={selectedSeverities.includes(severity.id)}
+                          onCheckedChange={() => toggleSeverity(severity.id)}
+                        />
+                        <label 
+                          htmlFor={`sev-${severity.id}`}
+                          className="text-sm cursor-pointer"
+                        >
+                          {severity.label}
+                        </label>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -345,7 +394,7 @@ export default function Analytics() {
         )}
         
         <Tabs defaultValue="executive">
-          <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full mb-6">
+          <TabsList className="grid grid-cols-2 w-full mb-6">
             <TabsTrigger value="executive" className="flex items-center gap-2">
               <BarChart3 size={16} />
               <span>Executive</span>
@@ -354,29 +403,17 @@ export default function Analytics() {
               <SlidersHorizontal size={16} />
               <span>Deep Dive</span>
             </TabsTrigger>
-            <TabsTrigger value="performance" className="flex items-center gap-2">
-              <TrendingUp size={16} />
-              <span>Performance</span>
-            </TabsTrigger>
-            <TabsTrigger value="trends" className="flex items-center gap-2">
-              <BarChart size={16} />
-              <span>Trends</span>
-            </TabsTrigger>
-            <TabsTrigger value="services" className="flex items-center gap-2">
-              <PieChart size={16} />
-              <span>Services</span>
-            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="executive">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex flex-col items-center">
-                    <BarChart3 size={24} className="text-purple mb-2" />
-                    <h3 className="text-sm font-medium text-muted-foreground">Total Incidents</h3>
-                    <p className="text-2xl font-bold mt-1">{metrics?.totalIncidents || 0}</p>
-                    <p className="text-xs text-muted-foreground">YTD: 156 (+12%)</p>
+                    <AlertCircle size={24} className="text-severity-critical mb-2" />
+                    <h3 className="text-sm font-medium text-muted-foreground">Open Incidents</h3>
+                    <p className="text-2xl font-bold mt-1">{metrics?.openIncidents || 0}</p>
+                    <p className="text-xs text-muted-foreground">5 Critical, 8 High</p>
                   </div>
                 </CardContent>
               </Card>
@@ -384,10 +421,10 @@ export default function Analytics() {
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex flex-col items-center">
-                    <Clock size={24} className="text-severity-critical mb-2" />
-                    <h3 className="text-sm font-medium text-muted-foreground">Open Incidents</h3>
-                    <p className="text-2xl font-bold mt-1">{metrics?.openIncidents || 0}</p>
-                    <p className="text-xs text-muted-foreground">5 SEV1, 8 SEV2</p>
+                    <Clock size={24} className="text-purple mb-2" />
+                    <h3 className="text-sm font-medium text-muted-foreground">Mean Time to Ack</h3>
+                    <p className="text-2xl font-bold mt-1">12 min</p>
+                    <p className="text-xs text-muted-foreground">Target: 15 min (+20%)</p>
                   </div>
                 </CardContent>
               </Card>
@@ -406,7 +443,7 @@ export default function Analytics() {
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex flex-col items-center">
-                    <BarChart3 size={24} className="text-purple mb-2" />
+                    <Target size={24} className="text-purple mb-2" />
                     <h3 className="text-sm font-medium text-muted-foreground">SLA Compliance</h3>
                     <p className="text-2xl font-bold mt-1">94%</p>
                     <p className="text-xs text-muted-foreground">Target: 95% (-1%)</p>
@@ -417,81 +454,220 @@ export default function Analytics() {
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
               <div className="lg:col-span-2">
-                <IncidentBarChart
-                  title="Monthly Incidents by Severity"
-                  data={monthlyData}
-                  xAxisKey="month"
-                  dataKeys={[
-                    { key: 'critical', color: '#E53E3E', name: 'SEV1' },
-                    { key: 'high', color: '#DD6B20', name: 'SEV2' },
-                    { key: 'medium', color: '#D69E2E', name: 'SEV3' },
-                    { key: 'low', color: '#38A169', name: 'SEV4' },
-                  ]}
-                />
+                <Card>
+                  <CardContent className="pt-6">
+                    <h3 className="text-lg font-semibold mb-4">Monthly Incidents by Severity</h3>
+                    <IncidentBarChart
+                      title=""
+                      legendPosition="top"
+                      data={monthlyData}
+                      xAxisKey="month"
+                      dataKeys={[
+                        { key: 'critical', color: '#E53E3E', name: 'SEV1' },
+                        { key: 'high', color: '#DD6B20', name: 'SEV2' },
+                        { key: 'medium', color: '#D69E2E', name: 'SEV3' },
+                        { key: 'low', color: '#38A169', name: 'SEV4' },
+                      ]}
+                    />
+                  </CardContent>
+                </Card>
               </div>
-              <IncidentPieChart
-                title="Incidents by Severity"
-                data={severityData}
-              />
+              
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-4">Incidents by Severity</h3>
+                  <IncidentPieChart
+                    title=""
+                    legendPosition="top"
+                    data={severityData}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-4">Average Time to Acknowledge (minutes)</h3>
+                  <IncidentBarChart
+                    title=""
+                    legendPosition="top"
+                    data={acknowledgeTimeData}
+                    xAxisKey="team"
+                    dataKeys={[
+                      { key: 'time', color: '#6E59A5', name: 'Minutes' }
+                    ]}
+                  />
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-4">Average Time to Report (minutes)</h3>
+                  <IncidentBarChart
+                    title=""
+                    legendPosition="top"
+                    data={reportTimeData}
+                    xAxisKey="severity"
+                    dataKeys={[
+                      { key: 'time', color: '#E53E3E', name: 'Minutes' }
+                    ]}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-6">
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-4">SLO Compliance %</h3>
+                  <IncidentBarChart
+                    title=""
+                    legendPosition="top"
+                    data={complianceData}
+                    xAxisKey="slo"
+                    dataKeys={[
+                      { key: 'compliance', color: '#9b87f5', name: 'Compliance %' }
+                    ]}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-4">Incidents by Team</h3>
+                  <IncidentBarChart
+                    title=""
+                    legendPosition="top"
+                    data={incidentsByTeam}
+                    xAxisKey="team"
+                    dataKeys={[
+                      { key: 'count', color: '#6E59A5', name: 'Incidents' }
+                    ]}
+                  />
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-4">Resolution Times by Severity (hours)</h3>
+                  <IncidentBarChart
+                    title=""
+                    legendPosition="top"
+                    data={resolutionTimes}
+                    xAxisKey="severity"
+                    dataKeys={[
+                      { key: 'time', color: '#6E59A5', name: 'Hours' }
+                    ]}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="deep-dive">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex flex-col items-center">
+                    <BarChart3 size={24} className="text-purple mb-2" />
+                    <h3 className="text-sm font-medium text-muted-foreground">Total Incidents</h3>
+                    <p className="text-2xl font-bold mt-1">{metrics?.totalIncidents || 0}</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <ArrowUp size={12} className="text-red-500" />
+                      <span>12% vs Last Period</span>
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex flex-col items-center">
+                    <Bell size={24} className="text-amber-500 mb-2" />
+                    <h3 className="text-sm font-medium text-muted-foreground">Active Alerts</h3>
+                    <p className="text-2xl font-bold mt-1">8</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <ArrowDown size={12} className="text-green-500" />
+                      <span>3% vs Last Period</span>
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex flex-col items-center">
+                    <Calendar size={24} className="text-purple mb-2" />
+                    <h3 className="text-sm font-medium text-muted-foreground">MTBF (hours)</h3>
+                    <p className="text-2xl font-bold mt-1">72</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <ArrowUp size={12} className="text-green-500" />
+                      <span>8% vs Last Period</span>
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex flex-col items-center">
+                    <CheckCircle size={24} className="text-green-500 mb-2" />
+                    <h3 className="text-sm font-medium text-muted-foreground">Resolution Rate</h3>
+                    <p className="text-2xl font-bold mt-1">87%</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <ArrowUp size={12} className="text-green-500" />
+                      <span>4% vs Last Period</span>
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 mb-6">
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-4">Incident Trends Over Time</h3>
+                  <IncidentAreaChart
+                    title=""
+                    legendPosition="top"
+                    data={metrics?.incidentsOverTime.map(item => ({
+                      date: item.date,
+                      count: item.count,
+                    })) || []}
+                    xAxisKey="date"
+                    dataKeys={[
+                      { key: 'count', color: '#6E59A5', name: 'Incidents' }
+                    ]}
+                  />
+                </CardContent>
+              </Card>
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Top Impacted Systems</h3>
-                  <ul className="space-y-3">
-                    {impactedServicesData.map((service, index) => (
-                      <li key={index} className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: service.color }}></div>
-                          <span>{service.name}</span>
-                        </div>
-                        <span className="font-semibold">{service.value} incidents</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <h3 className="text-lg font-semibold mb-4">Incidents by Status</h3>
+                  <IncidentPieChart
+                    title=""
+                    legendPosition="top"
+                    data={statusData}
+                  />
                 </CardContent>
               </Card>
               
-              <IncidentBarChart
-                title="Incidents by Team"
-                data={incidentsByTeam}
-                xAxisKey="team"
-                dataKeys={[
-                  { key: 'count', color: '#6E59A5', name: 'Incidents' }
-                ]}
-              />
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="deep-dive">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              <IncidentPieChart
-                title="Incidents by Status"
-                data={statusData}
-              />
-              <IncidentBarChart
-                title="Average Resolution Time by Severity (hours)"
-                data={resolutionTimes}
-                xAxisKey="severity"
-                dataKeys={[
-                  { key: 'time', color: '#6E59A5', name: 'Hours' }
-                ]}
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 gap-6">
-              <IncidentAreaChart
-                title="Incident Trends Over Time"
-                data={metrics?.incidentsOverTime.map(item => ({
-                  date: item.date,
-                  count: item.count,
-                })) || []}
-                xAxisKey="date"
-                dataKeys={[
-                  { key: 'count', color: '#6E59A5', name: 'Incidents' }
-                ]}
-              />
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-4">Most Impacted Services</h3>
+                  <IncidentPieChart
+                    title=""
+                    legendPosition="top"
+                    data={impactedServicesData}
+                  />
+                </CardContent>
+              </Card>
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
@@ -501,230 +677,53 @@ export default function Analytics() {
                   <ul className="space-y-3">
                     <li className="flex justify-between items-center">
                       <span>Deployment Issues</span>
-                      <span className="font-semibold">35%</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-32 bg-muted rounded-full overflow-hidden h-2">
+                          <div className="bg-purple h-2" style={{ width: '35%' }}></div>
+                        </div>
+                        <span className="font-semibold text-sm">35%</span>
+                      </div>
                     </li>
                     <li className="flex justify-between items-center">
                       <span>Configuration Changes</span>
-                      <span className="font-semibold">22%</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-32 bg-muted rounded-full overflow-hidden h-2">
+                          <div className="bg-purple h-2" style={{ width: '22%' }}></div>
+                        </div>
+                        <span className="font-semibold text-sm">22%</span>
+                      </div>
                     </li>
                     <li className="flex justify-between items-center">
                       <span>Infrastructure Failures</span>
-                      <span className="font-semibold">18%</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-32 bg-muted rounded-full overflow-hidden h-2">
+                          <div className="bg-purple h-2" style={{ width: '18%' }}></div>
+                        </div>
+                        <span className="font-semibold text-sm">18%</span>
+                      </div>
                     </li>
                     <li className="flex justify-between items-center">
                       <span>Capacity Issues</span>
-                      <span className="font-semibold">15%</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-32 bg-muted rounded-full overflow-hidden h-2">
+                          <div className="bg-purple h-2" style={{ width: '15%' }}></div>
+                        </div>
+                        <span className="font-semibold text-sm">15%</span>
+                      </div>
                     </li>
                     <li className="flex justify-between items-center">
                       <span>Third-party Dependencies</span>
-                      <span className="font-semibold">10%</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-32 bg-muted rounded-full overflow-hidden h-2">
+                          <div className="bg-purple h-2" style={{ width: '10%' }}></div>
+                        </div>
+                        <span className="font-semibold text-sm">10%</span>
+                      </div>
                     </li>
                   </ul>
                 </CardContent>
               </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Incidents by Business Unit</h3>
-                  <ul className="space-y-3">
-                    <li className="flex justify-between items-center">
-                      <span>Commerce</span>
-                      <span className="font-semibold">42 incidents</span>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Payments</span>
-                      <span className="font-semibold">38 incidents</span>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Logistics</span>
-                      <span className="font-semibold">24 incidents</span>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Customer Service</span>
-                      <span className="font-semibold">15 incidents</span>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Marketing</span>
-                      <span className="font-semibold">7 incidents</span>
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="performance">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex flex-col items-center">
-                    <Clock size={24} className="text-purple mb-2" />
-                    <h3 className="text-sm font-medium text-muted-foreground">Mean Time to Resolve</h3>
-                    <p className="text-2xl font-bold mt-1">4.8 hrs</p>
-                  </div>
-                </CardContent>
-              </Card>
               
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex flex-col items-center">
-                    <Clock size={24} className="text-purple mb-2" />
-                    <h3 className="text-sm font-medium text-muted-foreground">Mean Time to Acknowledge</h3>
-                    <p className="text-2xl font-bold mt-1">12 min</p>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex flex-col items-center">
-                    <Calendar size={24} className="text-purple mb-2" />
-                    <h3 className="text-sm font-medium text-muted-foreground">Mean Time Between Failures</h3>
-                    <p className="text-2xl font-bold mt-1">72 hrs</p>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex flex-col items-center">
-                    <BarChart3 size={24} className="text-purple mb-2" />
-                    <h3 className="text-sm font-medium text-muted-foreground">SLA Compliance</h3>
-                    <p className="text-2xl font-bold mt-1">95%</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <IncidentAreaChart
-                title="Resolution Time Trend"
-                data={[
-                  { month: 'Jan', time: 5.2 },
-                  { month: 'Feb', time: 4.8 },
-                  { month: 'Mar', time: 5.5 },
-                  { month: 'Apr', time: 6.0 },
-                  { month: 'May', time: 5.2 },
-                  { month: 'Jun', time: 4.5 },
-                  { month: 'Jul', time: 4.2 },
-                  { month: 'Aug', time: 3.9 },
-                  { month: 'Sep', time: 4.5 },
-                  { month: 'Oct', time: 4.8 },
-                  { month: 'Nov', time: 4.1 },
-                  { month: 'Dec', time: 3.6 },
-                ]}
-                xAxisKey="month"
-                dataKeys={[
-                  { key: 'time', color: '#6E59A5', name: 'Avg. Hours' }
-                ]}
-              />
-              <IncidentBarChart
-                title="Service Recovery Time (Average)"
-                data={[
-                  { service: 'API Gateway', recovery: 4.2 },
-                  { service: 'Auth Service', recovery: 3.5 },
-                  { service: 'Payment', recovery: 5.8 },
-                  { service: 'Database', recovery: 6.2 },
-                  { service: 'Search', recovery: 3.1 },
-                  { service: 'CDN', recovery: 2.4 },
-                ]}
-                xAxisKey="service"
-                dataKeys={[
-                  { key: 'recovery', color: '#6E59A5', name: 'Hours' }
-                ]}
-              />
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="trends">
-            <div className="grid grid-cols-1 gap-6 mb-6">
-              <IncidentAreaChart
-                title="Incident Trends Over Time"
-                data={[
-                  { date: 'Jan 2023', count: 15 },
-                  { date: 'Feb 2023', count: 12 },
-                  { date: 'Mar 2023', count: 18 },
-                  { date: 'Apr 2023', count: 10 },
-                  { date: 'May 2023', count: 14 },
-                  { date: 'Jun 2023', count: 16 },
-                  { date: 'Jul 2023', count: 12 },
-                  { date: 'Aug 2023', count: 11 },
-                  { date: 'Sep 2023', count: 14 },
-                  { date: 'Oct 2023', count: 23 },
-                  { date: 'Nov 2023', count: 19 },
-                  { date: 'Dec 2023', count: 16 },
-                  { date: 'Jan 2024', count: 21 },
-                  { date: 'Feb 2024', count: 18 },
-                  { date: 'Mar 2024', count: 15 },
-                ]}
-                xAxisKey="date"
-                dataKeys={[
-                  { key: 'count', color: '#6E59A5', name: 'Incidents' }
-                ]}
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <IncidentBarChart
-                title="Incident Growth Rate (% Change MoM)"
-                data={[
-                  { month: 'Jan', rate: 0 },
-                  { month: 'Feb', rate: 15 },
-                  { month: 'Mar', rate: 22 },
-                  { month: 'Apr', rate: -8 },
-                  { month: 'May', rate: -12 },
-                  { month: 'Jun', rate: 5 },
-                  { month: 'Jul', rate: 10 },
-                  { month: 'Aug', rate: -5 },
-                  { month: 'Sep', rate: 18 },
-                  { month: 'Oct', rate: 25 },
-                  { month: 'Nov', rate: -18 },
-                  { month: 'Dec', rate: 8 },
-                ]}
-                xAxisKey="month"
-                dataKeys={[
-                  { key: 'rate', color: '#6E59A5', name: 'Growth Rate %' }
-                ]}
-              />
-              <IncidentAreaChart
-                title="Critical Incidents vs. Total Incidents"
-                data={monthlyData.map(item => ({
-                  month: item.month,
-                  critical: item.critical,
-                  total: item.critical + item.high + item.medium + item.low,
-                }))}
-                xAxisKey="month"
-                dataKeys={[
-                  { key: 'critical', color: '#E53E3E', name: 'Critical' },
-                  { key: 'total', color: '#6E59A5', name: 'Total' }
-                ]}
-              />
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="services">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              <IncidentPieChart
-                title="Most Impacted Services"
-                data={impactedServicesData}
-              />
-              <IncidentBarChart
-                title="Service Downtime (minutes)"
-                data={[
-                  { service: 'API Gateway', downtime: 120 },
-                  { service: 'Auth Service', downtime: 85 },
-                  { service: 'Payment', downtime: 140 },
-                  { service: 'Database', downtime: 60 },
-                  { service: 'Search', downtime: 45 },
-                  { service: 'CDN', downtime: 30 },
-                ]}
-                xAxisKey="service"
-                dataKeys={[
-                  { key: 'downtime', color: '#E53E3E', name: 'Minutes' }
-                ]}
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4">Service Health Scores</h3>
@@ -781,55 +780,78 @@ export default function Analytics() {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 mt-6">
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-4">Critical Incidents Over Time</h3>
+                  <IncidentAreaChart
+                    title=""
+                    legendPosition="top"
+                    data={monthlyData.map(item => ({
+                      month: item.month,
+                      critical: item.critical,
+                      total: item.critical + item.high + item.medium + item.low,
+                    }))}
+                    xAxisKey="month"
+                    dataKeys={[
+                      { key: 'critical', color: '#E53E3E', name: 'Critical' },
+                      { key: 'total', color: '#6E59A5', name: 'Total' }
+                    ]}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <Card>
+                <CardContent className="pt-6">
+                  <h3 className="text-lg font-semibold mb-4">Incidents by Business Unit</h3>
+                  <ul className="space-y-3">
+                    <li className="flex justify-between items-center">
+                      <span>Commerce</span>
+                      <span className="font-semibold">42 incidents</span>
+                    </li>
+                    <li className="flex justify-between items-center">
+                      <span>Payments</span>
+                      <span className="font-semibold">38 incidents</span>
+                    </li>
+                    <li className="flex justify-between items-center">
+                      <span>Logistics</span>
+                      <span className="font-semibold">24 incidents</span>
+                    </li>
+                    <li className="flex justify-between items-center">
+                      <span>Customer Service</span>
+                      <span className="font-semibold">15 incidents</span>
+                    </li>
+                    <li className="flex justify-between items-center">
+                      <span>Marketing</span>
+                      <span className="font-semibold">7 incidents</span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
               
               <Card>
                 <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Integration Status</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-green-500"></div>
-                        <span>Jira</span>
-                      </div>
-                      <Badge variant="outline" className="bg-green-50">Connected</Badge>
-                    </div>
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-green-500"></div>
-                        <span>Opsgenie</span>
-                      </div>
-                      <Badge variant="outline" className="bg-green-50">Connected</Badge>
-                    </div>
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-green-500"></div>
-                        <span>Slack</span>
-                      </div>
-                      <Badge variant="outline" className="bg-green-50">Connected</Badge>
-                    </div>
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-amber-500"></div>
-                        <span>StatusPage</span>
-                      </div>
-                      <Badge variant="outline" className="bg-amber-50">Limited</Badge>
-                    </div>
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-red-500"></div>
-                        <span>PagerDuty</span>
-                      </div>
-                      <Badge variant="outline" className="bg-red-50">Disconnected</Badge>
-                    </div>
-                  </div>
+                  <h3 className="text-lg font-semibold mb-4">Service Downtime (minutes)</h3>
+                  <IncidentBarChart
+                    title=""
+                    legendPosition="top"
+                    data={[
+                      { service: 'API Gateway', downtime: 120 },
+                      { service: 'Auth Service', downtime: 85 },
+                      { service: 'Payment', downtime: 140 },
+                      { service: 'Database', downtime: 60 },
+                      { service: 'Search', downtime: 45 },
+                      { service: 'CDN', downtime: 30 },
+                    ]}
+                    xAxisKey="service"
+                    dataKeys={[
+                      { key: 'downtime', color: '#E53E3E', name: 'Minutes' }
+                    ]}
+                  />
                 </CardContent>
               </Card>
             </div>
