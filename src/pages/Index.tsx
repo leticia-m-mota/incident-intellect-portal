@@ -68,17 +68,17 @@ export default function Index() {
   
   return (
     <MainLayout>
-      <div className="mb-8">
+      <div className="mb-6">
         <PageTitle 
           title="Incident Response Portal" 
           description="Critical incident information at a glance"
         />
         
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        {/* Stats Overview - Reduced vertical margins */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           {isLoadingMetrics ? (
             Array(3).fill(0).map((_, i) => (
-              <Skeleton key={i} className="h-[120px] w-full" />
+              <Skeleton key={i} className="h-[100px] w-full" />
             ))
           ) : (
             <>
@@ -101,14 +101,14 @@ export default function Index() {
           )}
         </div>
         
-        {/* Recent Critical & High Incidents Section - Always show if there are any critical/high incidents */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
+        {/* Recent Critical & High Incidents Section - Reduced vertical margins */}
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-2">
             <h2 className="text-lg font-semibold">Recent Critical & High Incidents</h2>
             <Button
               variant="ghost"
               size="sm"
-              className="gap-1 text-purple hover:text-purple-dark"
+              className="gap-1.5 text-purple hover:text-purple-dark"
               onClick={() => navigate('/incidents')}
             >
               View all
@@ -118,18 +118,18 @@ export default function Index() {
           {isLoadingIncidents ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Array(5).fill(0).map((_, i) => (
-                <Skeleton key={i} className="h-[120px] w-full" />
+                <Skeleton key={i} className="h-[110px] w-full" />
               ))}
             </div>
           ) : recentCriticalHighIncidents?.length === 0 ? (
-            <div className="bg-muted/50 rounded-lg p-8 text-center">
+            <div className="bg-muted/50 rounded-lg p-6 text-center">
               <h3 className="text-lg font-medium mb-2">All Clear!</h3>
               <p className="text-muted-foreground">
                 There are no critical or high severity incidents.
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
               {recentCriticalHighIncidents?.map(incident => (
                 <SimplifiedIncidentCard key={incident.id} incident={incident} />
               ))}
@@ -137,11 +137,30 @@ export default function Index() {
           )}
         </div>
         
-        {/* Incident Trends Chart */}
+        {/* Incident Trends Chart - With legend moved above the chart */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">Incident Trends & Forecast ({today.getFullYear()})</h2>
+          <h2 className="text-lg font-semibold mb-3">Incident Trends & Forecast ({today.getFullYear()})</h2>
+          
+          {/* Chart Legend moved ABOVE the chart */}
+          <div className="flex justify-center mb-3">
+            <div className="flex gap-6 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 bg-[#6E59A5] rounded-sm"></div>
+                <span>Current Year</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 bg-[#9B8DD4] rounded-sm"></div>
+                <span>Forecast</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 bg-[#CCBFED] rounded-sm"></div>
+                <span>Last Year</span>
+              </div>
+            </div>
+          </div>
+          
           {isLoadingMetrics ? (
-            <Skeleton className="h-[340px] w-full" />
+            <Skeleton className="h-[280px] w-full" />
           ) : (
             <ChartContainer 
               config={{
@@ -149,39 +168,18 @@ export default function Index() {
                 forecast: { label: "Forecast", color: "#9B8DD4" },
                 lastYearCount: { label: "Last Year", color: "#CCBFED" }
               }}
-              className="h-[340px]"
+              className="h-[280px]" // Reduced height
             >
-              {/* Wrap multiple elements in a single React fragment */}
-              <>
-                <IncidentAreaChart 
-                  title=""
-                  data={trendDataWithForecast}
-                  xAxisKey="month"
-                  dataKeys={[
-                    { key: 'count', color: '#6E59A5', name: 'Current Year' },
-                    { key: 'forecast', color: '#9B8DD4', name: 'Forecast', strokeDasharray: "5 5" },
-                    { key: 'lastYearCount', color: '#CCBFED', name: 'Last Year' }
-                  ]}
-                />
-                
-                {/* Chart Legend is now inside the ChartContainer */}
-                <div className="flex justify-center mt-4">
-                  <div className="flex gap-6 text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="h-3 w-3 bg-[#6E59A5] rounded-sm"></div>
-                      <span>Current Year</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-3 w-3 bg-[#9B8DD4] rounded-sm"></div>
-                      <span>Forecast</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-3 w-3 bg-[#CCBFED] rounded-sm"></div>
-                      <span>Last Year</span>
-                    </div>
-                  </div>
-                </div>
-              </>
+              <IncidentAreaChart 
+                title=""
+                data={trendDataWithForecast}
+                xAxisKey="month"
+                dataKeys={[
+                  { key: 'count', color: '#6E59A5', name: 'Current Year' },
+                  { key: 'forecast', color: '#9B8DD4', name: 'Forecast', strokeDasharray: "5 5" },
+                  { key: 'lastYearCount', color: '#CCBFED', name: 'Last Year' }
+                ]}
+              />
             </ChartContainer>
           )}
         </div>

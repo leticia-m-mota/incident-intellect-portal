@@ -9,7 +9,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts';
 
 interface DataKey {
@@ -36,17 +35,17 @@ export function IncidentAreaChart({
 }: IncidentAreaChartProps) {
   return (
     <Card className={className}>
-      <CardHeader>
+      <CardHeader className="pb-0 pt-2">
         <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="h-[300px]">
+      <CardContent className="pb-1">
+        <div className="h-[260px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={data}
               margin={{
-                top: 10,
-                right: 30,
+                top: 5,
+                right: 25,
                 left: 0,
                 bottom: 0,
               }}

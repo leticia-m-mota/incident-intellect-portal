@@ -22,15 +22,15 @@ export function SimplifiedIncidentCard({ incident }: SimplifiedIncidentCardProps
       className="cursor-pointer hover:bg-muted/20 transition-colors border border-border"
       onClick={() => navigate(`/incidents/${incident.id}`)}
     >
-      <CardContent className="p-4">
-        <div className="flex items-start gap-2 mb-2">
+      <CardContent className="p-3">
+        <div className="flex items-start gap-2 mb-1.5">
           <IncidentSeverityBadge severity={incident.severity} className="badge-compact" />
           <IncidentStatusBadge status={incident.status} className="badge-compact" />
         </div>
         
-        <h3 className="font-medium text-sm mb-1 line-clamp-2">{incident.title}</h3>
+        <h3 className="font-medium text-xs mb-1 line-clamp-1">{incident.title}</h3>
         
-        <div className="flex flex-col gap-1 mt-3">
+        <div className="flex flex-col gap-0.5 mt-2">
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground font-mono">
               {incident.id}
