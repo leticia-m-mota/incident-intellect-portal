@@ -777,4 +777,233 @@ export default function Analytics() {
                           <div className="h-2 bg-muted rounded-full overflow-hidden">
                             <div 
                               className={`h-full ${item.score >= 90 ? 'bg-green-500' : item.score >= 80 ? 'bg-amber-500' : 'bg-red-500'}`} 
-                              style={{ width: `${item.score}%`
+                              style={{ width: `${item.score}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Incidents & Impact Section */}
+              <div className="mb-8 mt-12">
+                <div className="flex items-center gap-2 mb-4">
+                  <AlertCircle size={20} className="text-purple" />
+                  <h2 className="text-xl font-semibold">Incidents & Impact</h2>
+                </div>
+                <Separator className="mb-6" />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  <StatCard
+                    title="Total Incidents"
+                    value={metrics?.totalIncidents || 0}
+                    description="Last 30 days"
+                    icon={<AlertCircle size={20} className="text-purple" />}
+                    trend={{ value: 8, direction: 'up' }}
+                  />
+                  
+                  <StatCard
+                    title="Services Impacted"
+                    value="6"
+                    description="3 critical services"
+                    icon={<Database size={20} className="text-blue-500" />}
+                    trend={{ value: 2, direction: 'up' }}
+                  />
+                  
+                  <StatCard
+                    title="Total Downtime"
+                    value="14.5 hrs"
+                    description="Business impact: High"
+                    icon={<Clock size={20} className="text-amber-500" />}
+                    trend={{ value: 23, direction: 'down' }}
+                  />
+                  
+                  <StatCard
+                    title="Action Items"
+                    value="42"
+                    description="18 in progress"
+                    icon={<CheckCircle size={20} className="text-green-500" />}
+                    trend={{ value: 12, direction: 'up' }}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Incident Status Breakdown</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <IncidentBarChart
+                        title=""
+                        legendPosition="top"
+                        data={[
+                          { status: 'Open', count: metrics?.incidentsByStatus.open || 0 },
+                          { status: 'Investigating', count: metrics?.incidentsByStatus.investigating || 0 },
+                          { status: 'Identified', count: metrics?.incidentsByStatus.identified || 0 },
+                          { status: 'Monitoring', count: metrics?.incidentsByStatus.monitoring || 0 },
+                          { status: 'Resolved', count: metrics?.incidentsByStatus.resolved || 0 },
+                          { status: 'Closed', count: metrics?.incidentsByStatus.closed || 0 }
+                        ]}
+                        xAxisKey="status"
+                        dataKeys={[
+                          { key: 'count', color: '#6E59A5', name: 'Incidents' }
+                        ]}
+                      />
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Most Impacted Services</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <IncidentBarChart
+                        title=""
+                        legendPosition="top"
+                        data={impactedServicesData}
+                        xAxisKey="name"
+                        dataKeys={[
+                          { key: 'value', color: '#6E59A5', name: 'Incidents' }
+                        ]}
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Action Items by Status</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <IncidentBarChart
+                        title=""
+                        legendPosition="top"
+                        data={actionItemsByStatus}
+                        xAxisKey="status"
+                        dataKeys={[
+                          { key: 'count', color: '#4FD1C5', name: 'Items' }
+                        ]}
+                      />
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Time to Resolve by Service (minutes)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <IncidentBarChart
+                        title=""
+                        legendPosition="top"
+                        data={timeToResolveByService}
+                        xAxisKey="service"
+                        dataKeys={[
+                          { key: 'time', color: '#E53E3E', name: 'Minutes' }
+                        ]}
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Trends & Projections Section */}
+              <div className="mb-8 mt-12">
+                <div className="flex items-center gap-2 mb-4">
+                  <TrendingUp size={20} className="text-purple" />
+                  <h2 className="text-xl font-semibold">Trends & Projections</h2>
+                </div>
+                <Separator className="mb-6" />
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Monthly Incident Trends</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <IncidentBarChart
+                        title=""
+                        legendPosition="top"
+                        data={[
+                          { month: 'Jan', count: 15, critical: 3 },
+                          { month: 'Feb', count: 12, critical: 2 },
+                          { month: 'Mar', count: 18, critical: 4 },
+                          { month: 'Apr', count: 11, critical: 1 },
+                          { month: 'May', count: 14, critical: 2 },
+                          { month: 'Jun', count: 9, critical: 1 }
+                        ]}
+                        xAxisKey="month"
+                        dataKeys={[
+                          { key: 'count', color: '#6E59A5', name: 'Total Incidents' },
+                          { key: 'critical', color: '#E53E3E', name: 'Critical Incidents' }
+                        ]}
+                      />
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">MTTR Improvement (minutes)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <IncidentBarChart
+                        title=""
+                        legendPosition="top"
+                        data={incidentResolutionTime}
+                        xAxisKey="month"
+                        dataKeys={[
+                          { key: 'time', color: '#68D391', name: 'Minutes' }
+                        ]}
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Card className="mb-6">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Key Insights</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex gap-3 p-3 bg-muted/50 rounded-md">
+                        <div className="mt-0.5">
+                          <TrendingUp className="text-green-500" size={18} />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium">Resolution Time Improvement</h4>
+                          <p className="text-sm text-muted-foreground mt-1">Resolution times have improved by 23% over the last quarter due to improved runbooks and automation.</p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 p-3 bg-muted/50 rounded-md">
+                        <div className="mt-0.5">
+                          <AlertCircle className="text-amber-500" size={18} />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium">Authentication Service Incidents</h4>
+                          <p className="text-sm text-muted-foreground mt-1">Authentication service has had a 35% increase in incidents, primarily due to new deployments.</p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 p-3 bg-muted/50 rounded-md">
+                        <div className="mt-0.5">
+                          <CheckCircle className="text-blue-500" size={18} />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium">Acknowledgement Time</h4>
+                          <p className="text-sm text-muted-foreground mt-1">Average acknowledgement time has decreased by 40% since implementing rotation schedules and PagerDuty integration.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </MainLayout>
+  );
+}
