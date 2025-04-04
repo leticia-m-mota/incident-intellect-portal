@@ -5,7 +5,6 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { PageTitle } from '@/components/common/PageTitle';
 import { StatCard } from '@/components/common/StatCard';
 import { IncidentBarChart } from '@/components/charts/IncidentBarChart';
-import { IncidentPieChart } from '@/components/charts/IncidentPieChart';
 import { IncidentAreaChart } from '@/components/charts/IncidentAreaChart';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +15,25 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
+import { 
+  Bell, 
+  Clock,
+  Users, 
+  Activity,
+  AlertCircle,
+  BarChart3,
+  CheckCircle,
+  Shield,
+  FileText,
+  TrendingUp,
+  ArrowUpRight,
+  TrendingDown,
+  AlertTriangle,
+  PieChart,
+  Database
+} from 'lucide-react';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
+import { Separator } from '@/components/ui/separator';
 
 export default function Dashboard() {
   const [timeFilter, setTimeFilter] = useState<string>('month');
@@ -30,23 +48,7 @@ export default function Dashboard() {
     queryFn: mockDataService.getMetrics,
   });
   
-  // Prepare data for charts
-  const severityData = metrics ? [
-    { name: 'Severity 1', value: metrics.incidentsBySeverity.critical, color: '#E53E3E' },
-    { name: 'Severity 2', value: metrics.incidentsBySeverity.high, color: '#DD6B20' },
-    { name: 'Severity 3', value: metrics.incidentsBySeverity.medium, color: '#D69E2E' },
-    { name: 'Severity 4', value: metrics.incidentsBySeverity.low, color: '#38A169' },
-  ] : [];
-  
-  const statusData = metrics ? [
-    { name: 'Open', value: metrics.incidentsByStatus.open, color: '#4299E1' },
-    { name: 'Investigating', value: metrics.incidentsByStatus.investigating, color: '#9b87f5' },
-    { name: 'Identified', value: metrics.incidentsByStatus.identified, color: '#F6AD55' },
-    { name: 'Monitoring', value: metrics.incidentsByStatus.monitoring, color: '#4FD1C5' },
-    { name: 'Resolved', value: metrics.incidentsByStatus.resolved, color: '#68D391' },
-    { name: 'Closed', value: metrics.incidentsByStatus.closed, color: '#A0AEC0' },
-  ] : [];
-  
+  // Mock data for charts
   const monthlyData = [
     { month: 'Jan', critical: 3, high: 5, medium: 2, low: 1 },
     { month: 'Feb', critical: 2, high: 4, medium: 4, low: 2 },
@@ -62,15 +64,134 @@ export default function Dashboard() {
     { month: 'Dec', critical: 4, high: 6, medium: 3, low: 2 },
   ];
   
-  // Mock weekly data
-  const weeklyData = [
-    { day: 'Mon', incidents: 5 },
-    { day: 'Tue', incidents: 7 },
-    { day: 'Wed', incidents: 9 },
-    { day: 'Thu', incidents: 4 },
-    { day: 'Fri', incidents: 6 },
-    { day: 'Sat', incidents: 2 },
-    { day: 'Sun', incidents: 1 },
+  // Mock alerts data
+  const alertsByTeam = [
+    { team: 'Platform', count: 38 },
+    { team: 'Frontend', count: 22 },
+    { team: 'Backend', count: 31 },
+    { team: 'DevOps', count: 42 },
+    { team: 'QA', count: 12 },
+  ];
+  
+  const alertsByService = [
+    { service: 'API Gateway', count: 45 },
+    { service: 'Auth Service', count: 32 },
+    { service: 'Payment', count: 39 },
+    { service: 'Database', count: 27 },
+    { service: 'Search', count: 19 },
+    { service: 'CDN', count: 22 },
+  ];
+
+  const timeToAcknowledge = [
+    { severity: 'SEV1', team: 'Platform', time: 3 },
+    { severity: 'SEV1', team: 'Frontend', time: 5 },
+    { severity: 'SEV1', team: 'Backend', time: 2 },
+    { severity: 'SEV2', team: 'Platform', time: 7 },
+    { severity: 'SEV2', team: 'Frontend', time: 8 },
+    { severity: 'SEV2', team: 'Backend', time: 6 },
+  ];
+  
+  const timeToAckByService = [
+    { severity: 'SEV1', service: 'API Gateway', time: 2.5 },
+    { severity: 'SEV1', service: 'Auth Service', time: 4.1 },
+    { severity: 'SEV1', service: 'Payment', time: 3.3 },
+    { severity: 'SEV2', service: 'API Gateway', time: 6.7 },
+    { severity: 'SEV2', service: 'Auth Service', time: 7.9 },
+    { severity: 'SEV2', service: 'Payment', time: 8.2 },
+  ];
+  
+  // Mock incidents data
+  const incidentsStatus = [
+    { status: 'Open', count: metrics?.incidentsByStatus.open || 0 },
+    { status: 'Investigating', count: metrics?.incidentsByStatus.investigating || 0 },
+    { status: 'Identified', count: metrics?.incidentsByStatus.identified || 0 },
+    { status: 'Monitoring', count: metrics?.incidentsByStatus.monitoring || 0 },
+    { status: 'Resolved', count: metrics?.incidentsByStatus.resolved || 0 },
+    { status: 'Closed', count: metrics?.incidentsByStatus.closed || 0 },
+  ];
+  
+  const impactedServices = [
+    { service: 'API Gateway', incidents: 12, downtime: 245 },
+    { service: 'Authentication', incidents: 8, downtime: 180 },
+    { service: 'Payment', incidents: 7, downtime: 320 },
+    { service: 'Database', incidents: 6, downtime: 150 },
+    { service: 'Search', incidents: 5, downtime: 90 },
+    { service: 'CDN', incidents: 4, downtime: 60 },
+  ];
+  
+  const rootCauses = [
+    { cause: 'Deployment Issues', count: 14 },
+    { cause: 'Configuration', count: 9 },
+    { cause: 'Infrastructure', count: 7 },
+    { cause: 'Capacity', count: 6 },
+    { cause: 'Third-party Dependency', count: 4 },
+    { cause: 'Code Bug', count: 10 },
+  ];
+  
+  const serviceHealthScores = [
+    { service: 'API Gateway', score: 85 },
+    { service: 'Authentication', score: 92 },
+    { service: 'Payment', score: 79 },
+    { service: 'Database', score: 95 },
+    { service: 'Search', score: 88 },
+    { service: 'CDN', score: 91 },
+  ];
+  
+  const impactedTeams = [
+    { team: 'Platform', incidents: 15 },
+    { team: 'Frontend', incidents: 8 },
+    { team: 'Backend', incidents: 12 },
+    { team: 'Mobile', incidents: 7 },
+    { team: 'DevOps', incidents: 10 },
+    { team: 'Database', incidents: 6 },
+  ];
+  
+  const timeToResolve = [
+    { severity: 'SEV1', time: 3.5 },
+    { severity: 'SEV2', time: 5.2 },
+    { severity: 'SEV3', time: 8.1 },
+    { severity: 'SEV4', time: 12.4 },
+    { severity: 'SEV5', time: 24.0 },
+  ];
+  
+  const actionItems = [
+    { status: 'Backlog', count: 24 },
+    { status: 'Prioritized', count: 18 },
+    { status: 'In Progress', count: 12 },
+    { status: 'Review', count: 7 },
+    { status: 'Done', count: 32 },
+  ];
+  
+  // Mock trends data
+  const incidentProjections = [
+    { month: 'Jan', actual: 15, projected: 15 },
+    { month: 'Feb', actual: 12, projected: 12 },
+    { month: 'Mar', actual: 18, projected: 18 },
+    { month: 'Apr', actual: 11, projected: 11 },
+    { month: 'May', actual: 14, projected: 14 },
+    { month: 'Jun', actual: 9, projected: 9 },
+    { month: 'Jul', actual: null, projected: 10 },
+    { month: 'Aug', actual: null, projected: 12 },
+    { month: 'Sep', actual: null, projected: 15 },
+    { month: 'Oct', actual: null, projected: 17 },
+    { month: 'Nov', actual: null, projected: 14 },
+    { month: 'Dec', actual: null, projected: 16 },
+  ];
+  
+  const remediationTime = [
+    { month: 'Jan', time: 120 },
+    { month: 'Feb', time: 145 },
+    { month: 'Mar', time: 130 },
+    { month: 'Apr', time: 110 },
+    { month: 'May', time: 95 },
+    { month: 'Jun', time: 80 },
+  ];
+  
+  const incidentTrends = [
+    { quarter: 'Q1', frontend: 24, backend: 18, infrastructure: 32 },
+    { quarter: 'Q2', frontend: 18, backend: 22, infrastructure: 27 },
+    { quarter: 'Q3', frontend: 22, backend: 25, infrastructure: 24 },
+    { quarter: 'Q4', frontend: 26, backend: 20, infrastructure: 30 },
   ];
   
   // Format date for display
@@ -210,6 +331,7 @@ export default function Dashboard() {
                     dataKeys={[
                       { key: 'count', color: '#6E59A5', name: 'Incidents' }
                     ]}
+                    legendPosition="bottom"
                   />
                 </CardContent>
               </Card>
@@ -219,9 +341,20 @@ export default function Dashboard() {
                   <CardTitle>Severity Distribution</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <IncidentPieChart
+                  <IncidentBarChart
                     title=""
-                    data={severityData}
+                    data={[
+                      { name: 'SEV1', count: metrics?.incidentsBySeverity.critical || 0 },
+                      { name: 'SEV2', count: metrics?.incidentsBySeverity.high || 0 },
+                      { name: 'SEV3', count: metrics?.incidentsBySeverity.medium || 0 },
+                      { name: 'SEV4', count: metrics?.incidentsBySeverity.low || 0 },
+                      { name: 'SEV5', count: 8 },
+                    ]}
+                    xAxisKey="name"
+                    dataKeys={[
+                      { key: 'count', color: '#9b87f5', name: 'Incidents' }
+                    ]}
+                    legendPosition="bottom"
                   />
                 </CardContent>
               </Card>
@@ -278,143 +411,462 @@ export default function Dashboard() {
           </TabsContent>
           
           <TabsContent value="deepdive" className="mt-6">
-            {/* More Detailed Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-              {isLoadingMetrics ? (
-                Array(6).fill(0).map((_, i) => (
-                  <Skeleton key={i} className="h-[140px] w-full" />
-                ))
-              ) : (
-                <>
-                  <StatCard
-                    title="Mean Time to Acknowledge"
-                    value="24 mins"
-                    description="First response time"
-                  />
-                  <StatCard
-                    title="Mean Time to Resolve"
-                    value={`${Math.round((metrics?.mttr || 0) / 60)} hrs`}
-                    description="Resolution time"
-                  />
-                  <StatCard
-                    title="Mean Time Between Failures"
-                    value={`${metrics?.mtbf || 0} hrs`}
-                    description="System stability"
-                  />
-                  <StatCard
-                    title="Resolution Rate"
-                    value="92%"
-                    description="Same-day resolution"
-                  />
-                  <StatCard
-                    title="Recurring Issues"
-                    value="18%"
-                    description="Repeat incidents"
-                  />
-                  <StatCard
-                    title="Automated Recovery"
-                    value="42%"
-                    description="Self-healing rate"
-                  />
-                </>
-              )}
-            </div>
+            {/* Alerts Section */}
+            <section className="mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <Bell size={20} className="text-amber-500" />
+                <h2 className="text-xl font-semibold">Alerts</h2>
+              </div>
+              <Separator className="mb-6" />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <StatCard
+                  title="Total Alerts"
+                  value="142"
+                  description="Last 30 days"
+                  icon={<Bell size={20} className="text-amber-500" />}
+                />
+                
+                <StatCard
+                  title="Critical Alerts"
+                  value="28"
+                  description="19.7% of total"
+                  icon={<AlertCircle size={20} className="text-red-500" />}
+                  trend={{ value: 3, direction: 'down' }}
+                />
+                
+                <StatCard
+                  title="Mean Time to Acknowledge"
+                  value="6.2 min"
+                  description="Target: 5 min"
+                  icon={<Clock size={20} className="text-purple" />}
+                  trend={{ value: 8, direction: 'down' }}
+                />
+                
+                <StatCard
+                  title="Alert to Incident Conversion"
+                  value="34%"
+                  description="Alerts resulting in incidents"
+                  icon={<ArrowUpRight size={20} className="text-purple" />}
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Alert Volume by Team</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentBarChart
+                      title=""
+                      data={alertsByTeam}
+                      xAxisKey="team"
+                      dataKeys={[
+                        { key: 'count', color: '#9b87f5', name: 'Alerts' }
+                      ]}
+                      legendPosition="top"
+                    />
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Alert Volume by Service</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentBarChart
+                      title=""
+                      data={alertsByService}
+                      xAxisKey="service"
+                      dataKeys={[
+                        { key: 'count', color: '#6E59A5', name: 'Alerts' }
+                      ]}
+                      legendPosition="top"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Time to Acknowledge by Team (minutes)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentBarChart
+                      title=""
+                      data={timeToAcknowledge}
+                      xAxisKey="severity"
+                      dataKeys={[
+                        { key: 'time', color: '#9b87f5', name: 'Minutes' }
+                      ]}
+                      legendPosition="top"
+                    />
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Time to Acknowledge by Service (minutes)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentBarChart
+                      title=""
+                      data={timeToAckByService}
+                      xAxisKey="severity"
+                      dataKeys={[
+                        { key: 'time', color: '#6E59A5', name: 'Minutes' }
+                      ]}
+                      legendPosition="top"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </section>
             
-            {/* Detailed Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Incidents by Severity</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <IncidentBarChart
-                    title=""
-                    data={monthlyData}
-                    xAxisKey="month"
-                    dataKeys={[
-                      { key: 'critical', color: '#E53E3E', name: 'Severity 1' },
-                      { key: 'high', color: '#DD6B20', name: 'Severity 2' },
-                      { key: 'medium', color: '#D69E2E', name: 'Severity 3' },
-                      { key: 'low', color: '#38A169', name: 'Severity 4' },
-                    ]}
-                  />
-                </CardContent>
-              </Card>
+            {/* Incidents Section */}
+            <section className="mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <AlertTriangle size={20} className="text-red-500" />
+                <h2 className="text-xl font-semibold">Incidents</h2>
+              </div>
+              <Separator className="mb-6" />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <StatCard
+                  title="Total Incidents"
+                  value={metrics?.totalIncidents || 0}
+                  description="This period"
+                  icon={<AlertCircle size={20} className="text-red-500" />}
+                />
+                
+                <StatCard
+                  title="Open Incidents"
+                  value={metrics?.openIncidents || 0}
+                  description="Requiring attention"
+                  icon={<Activity size={20} className="text-amber-500" />}
+                />
+                
+                <StatCard
+                  title="Mean Time to Resolve"
+                  value={`${Math.round((metrics?.mttr || 0) / 60)} hrs`}
+                  description="Average resolution time"
+                  icon={<Clock size={20} className="text-purple" />}
+                />
+                
+                <StatCard
+                  title="System Resilience Score"
+                  value="87/100"
+                  description="Based on 6 key metrics"
+                  icon={<Shield size={20} className="text-green-500" />}
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Incidents by Status</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentBarChart
+                      title=""
+                      data={incidentsStatus}
+                      xAxisKey="status"
+                      dataKeys={[
+                        { key: 'count', color: '#9b87f5', name: 'Incidents' }
+                      ]}
+                      legendPosition="top"
+                    />
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Most Impacted Services</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentBarChart
+                      title=""
+                      data={impactedServices}
+                      xAxisKey="service"
+                      dataKeys={[
+                        { key: 'incidents', color: '#6E59A5', name: 'Incidents' }
+                      ]}
+                      legendPosition="top"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Service Downtime (minutes)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentBarChart
+                      title=""
+                      data={impactedServices}
+                      xAxisKey="service"
+                      dataKeys={[
+                        { key: 'downtime', color: '#E53E3E', name: 'Minutes' }
+                      ]}
+                      legendPosition="top"
+                    />
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Top Root Causes</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentBarChart
+                      title=""
+                      data={rootCauses}
+                      xAxisKey="cause"
+                      dataKeys={[
+                        { key: 'count', color: '#DD6B20', name: 'Incidents' }
+                      ]}
+                      legendPosition="top"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Service Health Scores</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4 pt-2">
+                      {serviceHealthScores.map(item => (
+                        <div key={item.service}>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm font-medium">{item.service}</span>
+                            <span className="text-sm font-medium">{item.score}/100</span>
+                          </div>
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full ${item.score >= 90 ? 'bg-green-500' : item.score >= 80 ? 'bg-amber-500' : 'bg-red-500'}`} 
+                              style={{ width: `${item.score}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Time to Resolve by Severity (hours)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentBarChart
+                      title=""
+                      data={timeToResolve}
+                      xAxisKey="severity"
+                      dataKeys={[
+                        { key: 'time', color: '#6E59A5', name: 'Hours' }
+                      ]}
+                      legendPosition="top"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Teams Impacted by Incidents</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentBarChart
+                      title=""
+                      data={impactedTeams}
+                      xAxisKey="team"
+                      dataKeys={[
+                        { key: 'incidents', color: '#9b87f5', name: 'Incidents' }
+                      ]}
+                      legendPosition="top"
+                    />
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Action Items by Status</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentBarChart
+                      title=""
+                      data={actionItems}
+                      xAxisKey="status"
+                      dataKeys={[
+                        { key: 'count', color: '#6E59A5', name: 'Items' }
+                      ]}
+                      legendPosition="top"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </section>
+            
+            {/* Trends Section */}
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp size={20} className="text-blue-500" />
+                <h2 className="text-xl font-semibold">Trends & Projections</h2>
+              </div>
+              <Separator className="mb-6" />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <StatCard
+                  title="Projected Incidents"
+                  value="+24%"
+                  description="Next quarter forecast"
+                  icon={<TrendingUp size={20} className="text-amber-500" />}
+                />
+                
+                <StatCard
+                  title="Remediation Time Trend"
+                  value="-15%"
+                  description="Month-over-month improvement"
+                  icon={<TrendingDown size={20} className="text-green-500" />}
+                  trend={{ value: 15, direction: 'down' }}
+                />
+                
+                <StatCard
+                  title="Recurring Issues"
+                  value="18%"
+                  description="Of total incidents"
+                  icon={<FileText size={20} className="text-purple" />}
+                  trend={{ value: 3, direction: 'down' }}
+                />
+                
+                <StatCard
+                  title="Technical Debt Progress"
+                  value="37%"
+                  description="Of critical items addressed"
+                  icon={<Database size={20} className="text-blue-500" />}
+                  trend={{ value: 12, direction: 'up' }}
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 gap-6 mb-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Incident Projections</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentAreaChart
+                      title=""
+                      data={incidentProjections}
+                      xAxisKey="month"
+                      dataKeys={[
+                        { key: 'actual', color: '#6E59A5', name: 'Actual Incidents' },
+                        { key: 'projected', color: '#9b87f5', name: 'Projected Incidents', strokeDasharray: "5 5" }
+                      ]}
+                      legendPosition="top"
+                    />
+                    <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-md">
+                      <h4 className="font-medium flex items-center gap-2">
+                        <AlertCircle size={16} className="text-amber-500" /> 
+                        Key Insight
+                      </h4>
+                      <p className="text-sm mt-1">
+                        The data projects a 24% increase in incidents for Q3, primarily affecting API Gateway and Authentication services. 
+                        Recommended focus on these services for proactive maintenance and scaling.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Time to Work on Remediations (hours)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentAreaChart
+                      title=""
+                      data={remediationTime}
+                      xAxisKey="month"
+                      dataKeys={[
+                        { key: 'time', color: '#6E59A5', name: 'Hours' }
+                      ]}
+                      legendPosition="top"
+                    />
+                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                      <p className="text-sm">
+                        <span className="font-medium">Positive Trend:</span> Remediation time has decreased by 33% over the last 6 months
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Incident Type Distribution by Quarter</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentBarChart
+                      title=""
+                      data={incidentTrends}
+                      xAxisKey="quarter"
+                      dataKeys={[
+                        { key: 'frontend', color: '#6E59A5', name: 'Frontend' },
+                        { key: 'backend', color: '#9b87f5', name: 'Backend' },
+                        { key: 'infrastructure', color: '#D6BCFA', name: 'Infrastructure' }
+                      ]}
+                      legendPosition="top"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
               
               <Card>
                 <CardHeader>
-                  <CardTitle>Incident Status Distribution</CardTitle>
+                  <CardTitle className="text-lg">Emerging Trends & Recommendations</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <IncidentPieChart
-                    title=""
-                    data={statusData}
-                  />
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Trend</TableHead>
+                        <TableHead>Impact</TableHead>
+                        <TableHead>Recommendation</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="font-medium">API Gateway capacity issues</TableCell>
+                        <TableCell>High (32% of recent incidents)</TableCell>
+                        <TableCell>Implement auto-scaling and circuit breakers</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">Authentication service reliability</TableCell>
+                        <TableCell>Medium (15% of recent incidents)</TableCell>
+                        <TableCell>Add redundancy and implement more comprehensive testing</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">Database connection exhaustion</TableCell>
+                        <TableCell>High (28% of recent incidents)</TableCell>
+                        <TableCell>Implement connection pooling and optimize query patterns</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">Deployment-related outages</TableCell>
+                        <TableCell>Medium (18% of recent incidents)</TableCell>
+                        <TableCell>Implement canary deployments and improved rollback procedures</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
                 </CardContent>
               </Card>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Top Impacted Services</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3">
-                    <li className="flex justify-between items-center">
-                      <span>API Gateway</span>
-                      <span className="font-semibold">12 incidents</span>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Authentication Service</span>
-                      <span className="font-semibold">8 incidents</span>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Payment Processing</span>
-                      <span className="font-semibold">7 incidents</span>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Search Service</span>
-                      <span className="font-semibold">5 incidents</span>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Mobile App</span>
-                      <span className="font-semibold">4 incidents</span>
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Root Cause Analysis</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3">
-                    <li className="flex justify-between items-center">
-                      <span>Deployment Issues</span>
-                      <span className="font-semibold">35%</span>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Configuration Changes</span>
-                      <span className="font-semibold">22%</span>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Infrastructure Failures</span>
-                      <span className="font-semibold">18%</span>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Capacity Issues</span>
-                      <span className="font-semibold">15%</span>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Third-party Dependencies</span>
-                      <span className="font-semibold">10%</span>
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
+            </section>
           </TabsContent>
         </Tabs>
       </div>
