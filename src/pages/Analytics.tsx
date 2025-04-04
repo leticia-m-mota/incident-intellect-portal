@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -16,11 +15,15 @@ import {
   TrendingUp,
   ArrowDown,
   ArrowUp,
-  Target
+  Target,
+  Activity,
+  Database,
+  FileText,
+  Info,
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PageTitle } from '@/components/common/PageTitle';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Select, 
@@ -45,6 +48,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
+import { StatCard } from '@/components/common/StatCard';
 
 export default function Analytics() {
   // Data filters
@@ -235,6 +239,91 @@ export default function Analytics() {
     });
   };
   
+  // Action items by status
+  const actionItemsByStatus = [
+    { status: 'Backlog', count: 24 },
+    { status: 'Prioritized', count: 18 },
+    { status: 'In Progress', count: 12 },
+    { status: 'Review', count: 7 },
+    { status: 'Done', count: 32 },
+  ];
+  
+  // Time to acknowledge by severity
+  const timeToAckBySeverity = [
+    { severity: 'SEV1', team: 'Platform', time: 3 },
+    { severity: 'SEV1', team: 'Frontend', time: 5 },
+    { severity: 'SEV1', team: 'Backend', time: 2 },
+    { severity: 'SEV2', team: 'Platform', time: 7 },
+    { severity: 'SEV2', team: 'Frontend', time: 8 },
+    { severity: 'SEV2', team: 'Backend', time: 6 },
+    { severity: 'SEV3', team: 'Platform', time: 12 },
+    { severity: 'SEV3', team: 'Frontend', time: 15 },
+    { severity: 'SEV3', team: 'Backend', time: 10 },
+  ];
+  
+  // Time to resolve by service
+  const timeToResolveByService = [
+    { service: 'API Gateway', time: 240 },
+    { service: 'Auth Service', time: 180 },
+    { service: 'Payment', time: 320 },
+    { service: 'Database', time: 150 },
+    { service: 'Search', time: 90 },
+    { service: 'CDN', time: 60 },
+  ];
+  
+  // Monthly incident projections
+  const incidentProjections = [
+    { month: 'Jan', actual: 15, projected: 15 },
+    { month: 'Feb', actual: 12, projected: 12 },
+    { month: 'Mar', actual: 18, projected: 18 },
+    { month: 'Apr', actual: 11, projected: 11 },
+    { month: 'May', actual: 14, projected: 14 },
+    { month: 'Jun', actual: 9, projected: 9 },
+    { month: 'Jul', actual: null, projected: 10 },
+    { month: 'Aug', actual: null, projected: 12 },
+    { month: 'Sep', actual: null, projected: 15 },
+    { month: 'Oct', actual: null, projected: 17 },
+    { month: 'Nov', actual: null, projected: 14 },
+    { month: 'Dec', actual: null, projected: 16 },
+  ];
+  
+  // Service health scores
+  const serviceHealthScores = [
+    { service: 'API Gateway', score: 85 },
+    { service: 'Authentication', score: 92 },
+    { service: 'Payment', score: 79 },
+    { service: 'Database', score: 95 },
+    { service: 'Search', score: 88 },
+    { service: 'CDN', score: 91 },
+  ];
+
+  // Alerts by team and service
+  const alertsByTeam = [
+    { team: 'Platform', count: 38 },
+    { team: 'Frontend', count: 22 },
+    { team: 'Backend', count: 31 },
+    { team: 'DevOps', count: 42 },
+    { team: 'QA', count: 12 },
+  ];
+  
+  const alertsByService = [
+    { service: 'API Gateway', count: 45 },
+    { service: 'Auth Service', count: 32 },
+    { service: 'Payment', count: 39 },
+    { service: 'Database', count: 27 },
+    { service: 'Search', count: 19 },
+    { service: 'CDN', count: 22 },
+  ];
+  
+  const incidentResolutionTime = [
+    { month: 'Jan', time: 240 },
+    { month: 'Feb', time: 210 },
+    { month: 'Mar', time: 180 },
+    { month: 'Apr', time: 195 },
+    { month: 'May', time: 165 },
+    { month: 'Jun', time: 150 },
+  ];
+
   return (
     <MainLayout>
       <div className="mb-8">
@@ -476,10 +565,20 @@ export default function Analytics() {
               <Card>
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4">Incidents by Severity</h3>
-                  <IncidentPieChart
+                  <IncidentBarChart
                     title=""
                     legendPosition="top"
-                    data={severityData}
+                    data={[
+                      { name: 'SEV1', count: metrics?.incidentsBySeverity.critical || 0 },
+                      { name: 'SEV2', count: metrics?.incidentsBySeverity.high || 0 },
+                      { name: 'SEV3', count: metrics?.incidentsBySeverity.medium || 0 },
+                      { name: 'SEV4', count: metrics?.incidentsBySeverity.low || 0 },
+                      { name: 'SEV5', count: 8 },
+                    ]}
+                    xAxisKey="name"
+                    dataKeys={[
+                      { key: 'count', color: '#9b87f5', name: 'Incidents' }
+                    ]}
                   />
                 </CardContent>
               </Card>
@@ -568,296 +667,114 @@ export default function Analytics() {
           </TabsContent>
           
           <TabsContent value="deep-dive">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex flex-col items-center">
-                    <BarChart3 size={24} className="text-purple mb-2" />
-                    <h3 className="text-sm font-medium text-muted-foreground">Total Incidents</h3>
-                    <p className="text-2xl font-bold mt-1">{metrics?.totalIncidents || 0}</p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <ArrowUp size={12} className="text-red-500" />
-                      <span>12% vs Last Period</span>
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Performance Section */}
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <Activity size={20} className="text-purple" />
+                <h2 className="text-xl font-semibold">Performance & Alerts</h2>
+              </div>
+              <Separator className="mb-6" />
               
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex flex-col items-center">
-                    <Bell size={24} className="text-amber-500 mb-2" />
-                    <h3 className="text-sm font-medium text-muted-foreground">Active Alerts</h3>
-                    <p className="text-2xl font-bold mt-1">8</p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <ArrowDown size={12} className="text-green-500" />
-                      <span>3% vs Last Period</span>
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <StatCard
+                  title="Active Alerts"
+                  value="8"
+                  description="4 critical, 4 high"
+                  icon={<Bell size={20} className="text-amber-500" />}
+                  trend={{ value: 3, direction: 'down' }}
+                />
+                
+                <StatCard
+                  title="Mean Time Between Failures"
+                  value="72 hrs"
+                  description="Target: 60hrs"
+                  icon={<Calendar size={20} className="text-purple" />}
+                  trend={{ value: 8, direction: 'up' }}
+                />
+                
+                <StatCard
+                  title="Resolution Rate"
+                  value="87%"
+                  description="Target: 90%"
+                  icon={<CheckCircle size={20} className="text-green-500" />}
+                  trend={{ value: 4, direction: 'up' }}
+                />
+                
+                <StatCard
+                  title="Total Incidents"
+                  value={metrics?.totalIncidents || 0}
+                  icon={<BarChart3 size={20} className="text-purple" />}
+                  trend={{ value: 12, direction: 'up' }}
+                />
+              </div>
               
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex flex-col items-center">
-                    <Calendar size={24} className="text-purple mb-2" />
-                    <h3 className="text-sm font-medium text-muted-foreground">MTBF (hours)</h3>
-                    <p className="text-2xl font-bold mt-1">72</p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <ArrowUp size={12} className="text-green-500" />
-                      <span>8% vs Last Period</span>
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Alerts by Team</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentBarChart
+                      title=""
+                      legendPosition="top"
+                      data={alertsByTeam}
+                      xAxisKey="team"
+                      dataKeys={[
+                        { key: 'count', color: '#D69E2E', name: 'Alerts' }
+                      ]}
+                    />
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Alerts by Service</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentBarChart
+                      title=""
+                      legendPosition="top"
+                      data={alertsByService}
+                      xAxisKey="service"
+                      dataKeys={[
+                        { key: 'count', color: '#D69E2E', name: 'Alerts' }
+                      ]}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
               
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex flex-col items-center">
-                    <CheckCircle size={24} className="text-green-500 mb-2" />
-                    <h3 className="text-sm font-medium text-muted-foreground">Resolution Rate</h3>
-                    <p className="text-2xl font-bold mt-1">87%</p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <ArrowUp size={12} className="text-green-500" />
-                      <span>4% vs Last Period</span>
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 mb-6">
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Incident Trends Over Time</h3>
-                  <IncidentAreaChart
-                    title=""
-                    legendPosition="top"
-                    data={metrics?.incidentsOverTime.map(item => ({
-                      date: item.date,
-                      count: item.count,
-                    })) || []}
-                    xAxisKey="date"
-                    dataKeys={[
-                      { key: 'count', color: '#6E59A5', name: 'Incidents' }
-                    ]}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Incidents by Status</h3>
-                  <IncidentPieChart
-                    title=""
-                    legendPosition="top"
-                    data={statusData}
-                  />
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Most Impacted Services</h3>
-                  <IncidentPieChart
-                    title=""
-                    legendPosition="top"
-                    data={impactedServicesData}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Top Root Causes</h3>
-                  <ul className="space-y-3">
-                    <li className="flex justify-between items-center">
-                      <span>Deployment Issues</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-32 bg-muted rounded-full overflow-hidden h-2">
-                          <div className="bg-purple h-2" style={{ width: '35%' }}></div>
-                        </div>
-                        <span className="font-semibold text-sm">35%</span>
-                      </div>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Configuration Changes</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-32 bg-muted rounded-full overflow-hidden h-2">
-                          <div className="bg-purple h-2" style={{ width: '22%' }}></div>
-                        </div>
-                        <span className="font-semibold text-sm">22%</span>
-                      </div>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Infrastructure Failures</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-32 bg-muted rounded-full overflow-hidden h-2">
-                          <div className="bg-purple h-2" style={{ width: '18%' }}></div>
-                        </div>
-                        <span className="font-semibold text-sm">18%</span>
-                      </div>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Capacity Issues</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-32 bg-muted rounded-full overflow-hidden h-2">
-                          <div className="bg-purple h-2" style={{ width: '15%' }}></div>
-                        </div>
-                        <span className="font-semibold text-sm">15%</span>
-                      </div>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Third-party Dependencies</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-32 bg-muted rounded-full overflow-hidden h-2">
-                          <div className="bg-purple h-2" style={{ width: '10%' }}></div>
-                        </div>
-                        <span className="font-semibold text-sm">10%</span>
-                      </div>
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Service Health Scores</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium">API Gateway</span>
-                        <span className="text-sm font-medium">85%</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-purple" style={{ width: '85%' }}></div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium">Authentication Service</span>
-                        <span className="text-sm font-medium">92%</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-purple" style={{ width: '92%' }}></div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium">Payment Processing</span>
-                        <span className="text-sm font-medium">79%</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-purple" style={{ width: '79%' }}></div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium">Database Cluster</span>
-                        <span className="text-sm font-medium">95%</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-purple" style={{ width: '95%' }}></div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium">Search Service</span>
-                        <span className="text-sm font-medium">88%</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-purple" style={{ width: '88%' }}></div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 mt-6">
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Critical Incidents Over Time</h3>
-                  <IncidentAreaChart
-                    title=""
-                    legendPosition="top"
-                    data={monthlyData.map(item => ({
-                      month: item.month,
-                      critical: item.critical,
-                      total: item.critical + item.high + item.medium + item.low,
-                    }))}
-                    xAxisKey="month"
-                    dataKeys={[
-                      { key: 'critical', color: '#E53E3E', name: 'Critical' },
-                      { key: 'total', color: '#6E59A5', name: 'Total' }
-                    ]}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Incidents by Business Unit</h3>
-                  <ul className="space-y-3">
-                    <li className="flex justify-between items-center">
-                      <span>Commerce</span>
-                      <span className="font-semibold">42 incidents</span>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Payments</span>
-                      <span className="font-semibold">38 incidents</span>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Logistics</span>
-                      <span className="font-semibold">24 incidents</span>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Customer Service</span>
-                      <span className="font-semibold">15 incidents</span>
-                    </li>
-                    <li className="flex justify-between items-center">
-                      <span>Marketing</span>
-                      <span className="font-semibold">7 incidents</span>
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Service Downtime (minutes)</h3>
-                  <IncidentBarChart
-                    title=""
-                    legendPosition="top"
-                    data={[
-                      { service: 'API Gateway', downtime: 120 },
-                      { service: 'Auth Service', downtime: 85 },
-                      { service: 'Payment', downtime: 140 },
-                      { service: 'Database', downtime: 60 },
-                      { service: 'Search', downtime: 45 },
-                      { service: 'CDN', downtime: 30 },
-                    ]}
-                    xAxisKey="service"
-                    dataKeys={[
-                      { key: 'downtime', color: '#E53E3E', name: 'Minutes' }
-                    ]}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </MainLayout>
-  );
-}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Time to Acknowledge by Severity and Team (minutes)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <IncidentBarChart
+                      title=""
+                      legendPosition="top"
+                      data={timeToAckBySeverity}
+                      xAxisKey="severity"
+                      dataKeys={[
+                        { key: 'time', color: '#6E59A5', name: 'Minutes' }
+                      ]}
+                    />
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Service Health Scores</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4 pt-2">
+                      {serviceHealthScores.map(item => (
+                        <div key={item.service}>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm font-medium">{item.service}</span>
+                            <span className="text-sm font-medium">{item.score}%</span>
+                          </div>
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full ${item.score >= 90 ? 'bg-green-500' : item.score >= 80 ? 'bg-amber-500' : 'bg-red-500'}`} 
+                              style={{ width: `${item.score}%`
