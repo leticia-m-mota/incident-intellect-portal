@@ -2,11 +2,11 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { format, startOfMonth, isAfter, compareDesc } from 'date-fns';
+import { format, startOfMonth, compareDesc } from 'date-fns';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PageTitle } from '@/components/common/PageTitle';
 import { StatCard } from '@/components/common/StatCard';
-import { IncidentCard } from '@/components/incidents/IncidentCard';
+import { SimplifiedIncidentCard } from '@/components/incidents/SimplifiedIncidentCard';
 import { IncidentAreaChart } from '@/components/charts/IncidentAreaChart';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,17 +33,14 @@ export default function Index() {
   const ytdText = `${format(yearStart, 'MMM d yyyy')} until today`;
   const currentMonthText = format(today, 'MMM yyyy');
   
-  // Get only critical and high severity incidents from the current month
-  const currentMonthCriticalHighIncidents = incidents?.filter(
-    incident => {
-      const incidentDate = new Date(incident.createdAt);
-      return (incident.severity === 'critical' || incident.severity === 'high') && 
-        isAfter(incidentDate, currentMonthStart);
-    }
-  ).sort((a, b) => {
-    // Sort by creation date (newest first)
-    return compareDesc(new Date(a.createdAt), new Date(b.createdAt));
-  }).slice(0, 5);
+  // Get critical and high severity incidents, sorted by creation date (newest first)
+  const recentCriticalHighIncidents = incidents
+    ?.filter(incident => (incident.severity === 'critical' || incident.severity === 'high'))
+    .sort((a, b) => {
+      // Sort by creation date (newest first)
+      return compareDesc(new Date(a.createdAt), new Date(b.createdAt));
+    })
+    .slice(0, 5);
   
   // Get count of currently open critical and high incidents
   const openCriticalHighCount = incidents?.filter(
@@ -68,9 +65,6 @@ export default function Index() {
       forecast: isFuture ? Math.floor(Math.random() * 18) + 8 : null // Forecast for future months
     };
   });
-
-  // Determine if there's an active critical situation
-  const hasCriticalSituation = openCriticalHighCount > 0;
   
   return (
     <MainLayout>
@@ -96,7 +90,7 @@ export default function Index() {
               <StatCard
                 title="Open Critical & High Incidents Right Now"
                 value={openCriticalHighCount}
-                className={hasCriticalSituation ? "bg-red-50 border-red-200" : ""}
+                className={openCriticalHighCount > 0 ? "bg-red-50 border-red-200" : ""}
               />
               <StatCard
                 title="Mean Time to Resolve"
@@ -107,43 +101,41 @@ export default function Index() {
           )}
         </div>
         
-        {/* Recent Critical & High Incidents Section - Only show if there are open critical/high incidents */}
-        {hasCriticalSituation && (
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Recent Critical & High Incidents ({currentMonthText})</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1 text-purple hover:text-purple-dark"
-                onClick={() => navigate('/incidents')}
-              >
-                View all
-              </Button>
-            </div>
-            
-            {isLoadingIncidents ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Array(5).fill(0).map((_, i) => (
-                  <Skeleton key={i} className="h-[180px] w-full" />
-                ))}
-              </div>
-            ) : currentMonthCriticalHighIncidents?.length === 0 ? (
-              <div className="bg-muted/50 rounded-lg p-8 text-center">
-                <h3 className="text-lg font-medium mb-2">All Clear!</h3>
-                <p className="text-muted-foreground">
-                  There are no critical or high severity incidents this month ({currentMonthText}).
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {currentMonthCriticalHighIncidents?.map(incident => (
-                  <IncidentCard key={incident.id} incident={incident} />
-                ))}
-              </div>
-            )}
+        {/* Recent Critical & High Incidents Section - Always show if there are any critical/high incidents */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Recent Critical & High Incidents</h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1 text-purple hover:text-purple-dark"
+              onClick={() => navigate('/incidents')}
+            >
+              View all
+            </Button>
           </div>
-        )}
+          
+          {isLoadingIncidents ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array(5).fill(0).map((_, i) => (
+                <Skeleton key={i} className="h-[120px] w-full" />
+              ))}
+            </div>
+          ) : recentCriticalHighIncidents?.length === 0 ? (
+            <div className="bg-muted/50 rounded-lg p-8 text-center">
+              <h3 className="text-lg font-medium mb-2">All Clear!</h3>
+              <p className="text-muted-foreground">
+                There are no critical or high severity incidents.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {recentCriticalHighIncidents?.map(incident => (
+                <SimplifiedIncidentCard key={incident.id} incident={incident} />
+              ))}
+            </div>
+          )}
+        </div>
         
         {/* Incident Trends Chart */}
         <div>
