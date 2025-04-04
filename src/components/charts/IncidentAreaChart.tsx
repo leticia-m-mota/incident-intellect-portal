@@ -9,6 +9,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from 'recharts';
 
 interface DataKey {
@@ -24,6 +25,7 @@ interface IncidentAreaChartProps {
   dataKeys: Array<DataKey>;
   xAxisKey: string;
   className?: string;
+  legendPosition?: 'top' | 'right' | 'bottom' | 'left';
 }
 
 export function IncidentAreaChart({ 
@@ -31,7 +33,8 @@ export function IncidentAreaChart({
   data, 
   dataKeys, 
   xAxisKey,
-  className 
+  className,
+  legendPosition = 'bottom'
 }: IncidentAreaChartProps) {
   return (
     <Card className={className}>
@@ -54,6 +57,10 @@ export function IncidentAreaChart({
               <XAxis dataKey={xAxisKey} />
               <YAxis />
               <Tooltip />
+              <Legend 
+                verticalAlign={legendPosition === 'top' || legendPosition === 'bottom' ? legendPosition : 'bottom'} 
+                align={legendPosition === 'left' || legendPosition === 'right' ? legendPosition : 'center'} 
+              />
               {dataKeys.map((dataKey, index) => (
                 <Area
                   key={index}

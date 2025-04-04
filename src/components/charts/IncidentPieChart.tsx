@@ -18,12 +18,14 @@ interface IncidentPieChartProps {
     color: string;
   }>;
   className?: string;
+  legendPosition?: 'top' | 'right' | 'bottom' | 'left';
 }
 
 export function IncidentPieChart({ 
   title, 
   data,
-  className 
+  className,
+  legendPosition = 'bottom'
 }: IncidentPieChartProps) {
   return (
     <Card className={className}>
@@ -52,7 +54,10 @@ export function IncidentPieChart({
               <Tooltip 
                 formatter={(value: number) => [value, 'Count']}
               />
-              <Legend />
+              <Legend 
+                verticalAlign={legendPosition === 'top' || legendPosition === 'bottom' ? legendPosition : 'bottom'} 
+                align={legendPosition === 'left' || legendPosition === 'right' ? legendPosition : 'center'} 
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>

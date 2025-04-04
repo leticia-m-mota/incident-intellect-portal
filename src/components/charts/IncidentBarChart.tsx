@@ -18,6 +18,7 @@ interface IncidentBarChartProps {
   dataKeys: Array<{ key: string, color: string, name: string }>;
   xAxisKey: string;
   className?: string;
+  legendPosition?: 'top' | 'right' | 'bottom' | 'left';
 }
 
 export function IncidentBarChart({ 
@@ -25,7 +26,8 @@ export function IncidentBarChart({
   data, 
   dataKeys, 
   xAxisKey,
-  className 
+  className,
+  legendPosition = 'bottom'
 }: IncidentBarChartProps) {
   return (
     <Card className={className}>
@@ -48,7 +50,8 @@ export function IncidentBarChart({
               <XAxis dataKey={xAxisKey} />
               <YAxis />
               <Tooltip />
-              <Legend />
+              <Legend verticalAlign={legendPosition === 'top' || legendPosition === 'bottom' ? legendPosition : 'bottom'} 
+                     align={legendPosition === 'left' || legendPosition === 'right' ? legendPosition : 'center'} />
               {dataKeys.map((dataKey, index) => (
                 <Bar
                   key={index}
