@@ -20,7 +20,7 @@ export function SimplifiedIncidentCard({ incident, compact = false }: Simplified
   
   return (
     <Card 
-      className="cursor-pointer hover:bg-muted/20 transition-colors border border-border"
+      className="cursor-pointer hover:bg-white transition-colors border border-border"
       onClick={() => navigate(`/incidents/${incident.id}`)}
     >
       <CardContent className={compact ? "p-2" : "p-3"}>

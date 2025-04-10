@@ -115,7 +115,7 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
               filteredIncidents.map((incident) => (
                 <TableRow 
                   key={incident.id}
-                  className="cursor-pointer hover:bg-muted/50"
+                  className="cursor-pointer hover:bg-white"
                   onClick={() => navigate(`/incidents/${incident.id}`)}
                 >
                   <TableCell className="font-mono text-xs">{incident.id}</TableCell>

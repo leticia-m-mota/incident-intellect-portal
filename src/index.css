@@ -66,19 +66,19 @@
 
 @layer components {
   .badge-critical {
-    @apply bg-[hsl(var(--severity-critical))]/15 text-[hsl(var(--severity-critical))] px-2 py-0.5 rounded text-xs font-medium;
+    @apply bg-[hsl(var(--severity-critical))]/15 text-[hsl(var(--severity-critical))] hover:bg-white hover:text-[hsl(var(--severity-critical))] px-2 py-0.5 rounded text-xs font-medium transition-colors;
   }
   
   .badge-high {
-    @apply bg-[hsl(var(--severity-high))]/15 text-[hsl(var(--severity-high))] px-2 py-0.5 rounded text-xs font-medium;
+    @apply bg-[hsl(var(--severity-high))]/15 text-[hsl(var(--severity-high))] hover:bg-white hover:text-[hsl(var(--severity-high))] px-2 py-0.5 rounded text-xs font-medium transition-colors;
   }
   
   .badge-medium {
-    @apply bg-[hsl(var(--severity-medium))]/15 text-[hsl(var(--severity-medium))] px-2 py-0.5 rounded text-xs font-medium;
+    @apply bg-purple/15 text-purple hover:bg-white hover:text-purple px-2 py-0.5 rounded text-xs font-medium transition-colors;
   }
   
   .badge-low {
-    @apply bg-[hsl(var(--severity-low))]/15 text-[hsl(var(--severity-low))] px-2 py-0.5 rounded text-xs font-medium;
+    @apply bg-[hsl(var(--severity-low))]/15 text-[hsl(var(--severity-low))] hover:bg-white hover:text-[hsl(var(--severity-low))] px-2 py-0.5 rounded text-xs font-medium transition-colors;
   }
 
   .card-gradient {
@@ -104,11 +104,11 @@
 
   /* Clean card styles */
   .card-clean {
-    @apply border border-border bg-card p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200;
+    @apply border border-border bg-card p-4 rounded-lg shadow-sm hover:shadow-md hover:bg-white transition-all duration-200;
   }
 
   /* Compact badge */
   .badge-compact {
-    @apply text-xs py-0.5 px-1.5 rounded-sm font-medium;
+    @apply text-xs py-0.5 px-1.5 rounded-sm font-medium transition-colors;
   }
 }

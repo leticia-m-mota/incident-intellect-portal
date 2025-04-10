@@ -16,7 +16,7 @@ export function IncidentCard({ incident }: IncidentCardProps) {
   
   return (
     <Card 
-      className="cursor-pointer hover:shadow-md transition-shadow border-border"
+      className="cursor-pointer hover:shadow-md hover:bg-white transition-all border-border"
       onClick={() => navigate(`/incidents/${incident.id}`)}
     >
       <CardContent className="p-4">
@@ -37,7 +37,7 @@ export function IncidentCard({ incident }: IncidentCardProps) {
               {incident.tags.slice(0, 3).map(tag => (
                 <span 
                   key={tag} 
-                  className="px-1.5 py-0.5 bg-secondary text-secondary-foreground text-[10px] rounded-full"
+                  className="px-1.5 py-0.5 bg-secondary text-secondary-foreground text-[10px] rounded-full hover:bg-white transition-colors"
                 >
                   #{tag}
                 </span>

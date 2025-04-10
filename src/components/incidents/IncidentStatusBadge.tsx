@@ -11,19 +11,19 @@ interface IncidentStatusBadgeProps {
 
 export function IncidentStatusBadge({ status, className }: IncidentStatusBadgeProps) {
   const badgeStyles = {
-    open: 'bg-blue-500/15 text-blue-600 hover:bg-blue-500/20',
-    investigating: 'bg-purple-light/15 text-purple hover:bg-purple-light/20',
-    identified: 'bg-amber-500/15 text-amber-600 hover:bg-amber-500/20',
-    monitoring: 'bg-cyan-500/15 text-cyan-600 hover:bg-cyan-500/20',
-    resolved: 'bg-severity-low/15 text-severity-low hover:bg-severity-low/20',
-    closed: 'bg-gray-500/15 text-gray-600 hover:bg-gray-500/20',
+    open: 'bg-red-500/15 text-red-600 hover:bg-white hover:text-red-700',
+    investigating: 'bg-orange-500/15 text-orange-600 hover:bg-white hover:text-orange-700',
+    identified: 'bg-amber-500/15 text-amber-600 hover:bg-white hover:text-amber-700',
+    monitoring: 'bg-cyan-500/15 text-cyan-600 hover:bg-white hover:text-cyan-700',
+    resolved: 'bg-chart-green/15 text-chart-green hover:bg-white hover:text-chart-green',
+    closed: 'bg-gray-500/15 text-gray-600 hover:bg-white hover:text-gray-700',
   };
 
   return (
     <Badge 
       variant="outline" 
       className={cn(
-        'font-medium border-0 text-xs py-0.5 px-1.5',
+        'font-medium border-0 text-xs py-0.5 px-1.5 transition-colors',
         badgeStyles[status],
         className
       )}
