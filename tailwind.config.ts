@@ -63,22 +63,30 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom colors for our app
+				// Custom colors from palette
 				purple: {
-					DEFAULT: '#6E59A5',
-					light: '#9b87f5',
-					dark: '#4A3B80'
+					DEFAULT: '#820AD1', // Main purple
+					light: '#AA68FF', // Purple sub tone
+					dark: '#6B08AD' // Darker variant
 				},
 				gray: {
-					DEFAULT: '#8E9196',
-					light: '#F6F6F7',
-					dark: '#333333'
+					DEFAULT: '#E4E4E4', // Grey
+					light: '#F4F4F4', // Off-White
+					dark: '#333333' // Darker variant
+				},
+				// Graph colors
+				chart: {
+					green: '#14AA1F',
+					orange: '#FEA44B',
+					red: '#FE0201',
+					blue: '#5DC8FF',
+					lilac: '#CEBAF4'
 				},
 				severity: {
-					critical: '#E53E3E',
-					high: '#DD6B20',
-					medium: '#D69E2E',
-					low: '#38A169',
+					critical: '#FE0201', // Red from your palette
+					high: '#FEA44B',     // Orange from your palette
+					medium: '#CEBAF4',   // Lilac from your palette
+					low: '#14AA1F',      // Green from your palette
 				}
 			},
 			borderRadius: {

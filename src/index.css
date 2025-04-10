@@ -14,41 +14,41 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 15%;
 
-    --primary: 263 40% 50%;  /* Purple */
+    --primary: 276 90% 43%;  /* Main Purple #820AD1 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 5% 90%;  /* Light Gray */
+    --secondary: 240 5% 90%;  /* Gray #E4E4E4 */
     --secondary-foreground: 240 10% 15%;
 
     --muted: 240 5% 90%;
     --muted-foreground: 240 5% 45%;
 
-    --accent: 263 40% 94%;   /* Light Purple */
-    --accent-foreground: 263 40% 50%;
+    --accent: 270 100% 87%;   /* Light Purple #AA68FF */
+    --accent-foreground: 276 90% 43%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 100% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Accessible severity colors with better contrast */
-    --severity-critical: 0 85% 53%;    /* #e02712 - Better red */
-    --severity-high: 25 95% 53%;      /* #e27112 - Better orange */
-    --severity-medium: 40 100% 48%;   /* #e6b800 - Better yellow */
-    --severity-low: 142 50% 45%;      /* #2a9d6f - Better green */
+    /* Severity colors from palette */
+    --severity-critical: 0 100% 50%;    /* #FE0201 - Red */
+    --severity-high: 33 99% 65%;      /* #FEA44B - Orange */
+    --severity-medium: 260 74% 88%;   /* #CEBAF4 - Lilac */
+    --severity-low: 127 68% 37%;      /* #14AA1F - Green */
     
     --border: 240 6% 90%;
     --input: 240 6% 90%;
-    --ring: 263 40% 50%;
+    --ring: 276 90% 43%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 263 40% 20%;
+    --sidebar-background: 276 90% 20%;
     --sidebar-foreground: 240 6% 97%;
-    --sidebar-primary: 263 40% 60%;
+    --sidebar-primary: 276 90% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 263 20% 25%;
-    --sidebar-accent-foreground: 263 40% 97%;
-    --sidebar-border: 263 20% 25%;
-    --sidebar-ring: 263 40% 60%;
+    --sidebar-accent: 276 20% 25%;
+    --sidebar-accent-foreground: 276 90% 97%;
+    --sidebar-border: 276 20% 25%;
+    --sidebar-ring: 276 90% 50%;
   }
 }
 

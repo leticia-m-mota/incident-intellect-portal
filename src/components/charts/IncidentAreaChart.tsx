@@ -49,9 +49,22 @@ export function IncidentAreaChart({
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey={xAxisKey} />
               <YAxis />
-              <Tooltip />
-              <Legend verticalAlign={legendPosition === 'top' || legendPosition === 'bottom' ? legendPosition : 'bottom'} 
-                     align={legendPosition === 'left' || legendPosition === 'right' ? legendPosition : 'center'} />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#fff',
+                  border: '1px solid #E4E4E4',
+                  borderRadius: '8px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                }}
+              />
+              <Legend 
+                verticalAlign={legendPosition === 'top' || legendPosition === 'bottom' ? legendPosition : 'bottom'} 
+                align={legendPosition === 'left' || legendPosition === 'right' ? legendPosition : 'center'} 
+                wrapperStyle={{ 
+                  paddingTop: legendPosition === 'bottom' ? '10px' : '0',
+                  paddingBottom: legendPosition === 'top' ? '10px' : '0'
+                }}
+              />
               {dataKeys.map((dataKey, index) => (
                 <Area
                   key={index}
