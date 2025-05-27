@@ -33,18 +33,18 @@ export default function Index() {
   const ytdText = `${format(yearStart, 'MMM d yyyy')} until today`;
   const currentMonthText = format(today, 'MMM yyyy');
   
-  // Get critical and high severity incidents, sorted by creation date (newest first)
+  // Get critical and high severity incidents (severity 1 and 2), sorted by creation date (newest first)
   const recentCriticalHighIncidents = incidents
-    ?.filter(incident => (incident.severity === 'critical' || incident.severity === 'high'))
+    ?.filter(incident => (incident.severity === 1 || incident.severity === 2))
     .sort((a, b) => {
       // Sort by creation date (newest first)
       return compareDesc(new Date(a.createdAt), new Date(b.createdAt));
     })
     .slice(0, 5);
   
-  // Get count of currently open critical and high incidents
+  // Get count of currently open critical and high incidents (severity 1 and 2)
   const openCriticalHighCount = incidents?.filter(
-    incident => (incident.severity === 'critical' || incident.severity === 'high') && 
+    incident => (incident.severity === 1 || incident.severity === 2) && 
       ['open', 'investigating', 'identified', 'monitoring'].includes(incident.status)
   ).length || 0;
   
