@@ -57,7 +57,7 @@ export default function Incidents() {
   ).length || 0;
   
   const criticalIncidents = incidents?.filter(
-    incident => incident.severity === 'critical'
+    incident => incident.severity === 1
   ).length || 0;
   
   const resolvedThisMonth = incidents?.filter(
@@ -148,7 +148,7 @@ export default function Incidents() {
       incident.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       incident.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
       
-    const matchesSeverity = filterSeverity === 'all' || incident.severity === filterSeverity;
+    const matchesSeverity = filterSeverity === 'all' || incident.severity.toString() === filterSeverity;
     const matchesStatus = filterStatus === 'all' || incident.status === filterStatus;
     
     // Instead of incident.type, check for tag with the filtered type
@@ -165,7 +165,10 @@ export default function Incidents() {
     return matchesSearch && matchesSeverity && matchesStatus && matchesType && 
            matchesBusinessUnit && matchesTeam;
   }).sort((a, b) => {
-    // Sort by creation date (newest first)
+    // Sort by severity first (1 is most critical), then by creation date
+    if (a.severity !== b.severity) {
+      return a.severity - b.severity;
+    }
     return compareDesc(new Date(a.createdAt), new Date(b.createdAt));
   }) || [];
   
@@ -300,10 +303,11 @@ export default function Incidents() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Severities</SelectItem>
-                <SelectItem value="critical">Critical</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="1">Severity 1 (Critical)</SelectItem>
+                <SelectItem value="2">Severity 2 (High)</SelectItem>
+                <SelectItem value="3">Severity 3 (Medium)</SelectItem>
+                <SelectItem value="4">Severity 4 (Low)</SelectItem>
+                <SelectItem value="5">Severity 5 (Minimal)</SelectItem>
               </SelectContent>
             </Select>
           </div>

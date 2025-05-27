@@ -1,5 +1,5 @@
 
-export type SeverityLevel = 'critical' | 'high' | 'medium' | 'low';
+export type SeverityLevel = 1 | 2 | 3 | 4 | 5;
 export type IncidentStatus = 'open' | 'investigating' | 'identified' | 'monitoring' | 'resolved' | 'closed';
 
 export interface Incident {

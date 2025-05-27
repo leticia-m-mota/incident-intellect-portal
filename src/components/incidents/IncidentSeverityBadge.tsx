@@ -10,23 +10,53 @@ interface IncidentSeverityBadgeProps {
 }
 
 export function IncidentSeverityBadge({ severity, className }: IncidentSeverityBadgeProps) {
-  const badgeStyles = {
-    critical: 'bg-severity-critical/15 text-severity-critical hover:bg-white hover:text-severity-critical',
-    high: 'bg-severity-high/15 text-severity-high hover:bg-white hover:text-severity-high',
-    medium: 'bg-purple/15 text-purple hover:bg-white hover:text-purple', // Changed to purple for better contrast
-    low: 'bg-severity-low/15 text-severity-low hover:bg-white hover:text-severity-low',
+  const getSeverityConfig = (level: SeverityLevel) => {
+    switch (level) {
+      case 1:
+        return {
+          label: 'Critical',
+          style: 'bg-severity-critical/15 text-severity-critical hover:bg-white hover:text-severity-critical'
+        };
+      case 2:
+        return {
+          label: 'High',
+          style: 'bg-severity-high/15 text-severity-high hover:bg-white hover:text-severity-high'
+        };
+      case 3:
+        return {
+          label: 'Medium',
+          style: 'bg-purple/15 text-purple hover:bg-white hover:text-purple'
+        };
+      case 4:
+        return {
+          label: 'Low',
+          style: 'bg-severity-low/15 text-severity-low hover:bg-white hover:text-severity-low'
+        };
+      case 5:
+        return {
+          label: 'Minimal',
+          style: 'bg-gray-500/15 text-gray-600 hover:bg-white hover:text-gray-700'
+        };
+      default:
+        return {
+          label: 'Unknown',
+          style: 'bg-gray-500/15 text-gray-600 hover:bg-white hover:text-gray-700'
+        };
+    }
   };
+
+  const config = getSeverityConfig(severity);
 
   return (
     <Badge 
       variant="outline" 
       className={cn(
         'font-medium border-0 transition-colors',
-        badgeStyles[severity],
+        config.style,
         className
       )}
     >
-      {severity.charAt(0).toUpperCase() + severity.slice(1)}
+      {config.label}
     </Badge>
   );
 }

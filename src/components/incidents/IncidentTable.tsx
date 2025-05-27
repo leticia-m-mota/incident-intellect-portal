@@ -39,7 +39,7 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
       incident.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       incident.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
       
-    const matchesSeverity = filterSeverity === 'all' || incident.severity === filterSeverity;
+    const matchesSeverity = filterSeverity === 'all' || incident.severity.toString() === filterSeverity;
     const matchesStatus = filterStatus === 'all' || incident.status === filterStatus;
     
     return matchesSearch && matchesSeverity && matchesStatus;
@@ -65,10 +65,11 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Severities</SelectItem>
-              <SelectItem value="critical">Critical</SelectItem>
-              <SelectItem value="high">High</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="low">Low</SelectItem>
+              <SelectItem value="1">Severity 1 (Critical)</SelectItem>
+              <SelectItem value="2">Severity 2 (High)</SelectItem>
+              <SelectItem value="3">Severity 3 (Medium)</SelectItem>
+              <SelectItem value="4">Severity 4 (Low)</SelectItem>
+              <SelectItem value="5">Severity 5 (Minimal)</SelectItem>
             </SelectContent>
           </Select>
           
