@@ -42,9 +42,9 @@ export function IncidentImpactMetrics({
   };
   
   const getBusinessImpactLevel = () => {
-    if (incident.severity === 'critical') return 'Severe';
-    if (incident.severity === 'high') return 'Significant';
-    if (incident.severity === 'medium') return 'Moderate';
+    if (incident.severity === 1) return 'Severe';
+    if (incident.severity === 2) return 'Significant';
+    if (incident.severity === 3) return 'Moderate';
     return 'Low';
   };
   
