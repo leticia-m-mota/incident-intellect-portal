@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -300,7 +299,7 @@ export default function Dashboard() {
                   />
                   <StatCard
                     title="Critical Incidents"
-                    value={metrics?.incidentsBySeverity.critical || 0}
+                    value={metrics?.incidentsBySeverity[1] || 0}
                     description="Severity 1 issues"
                   />
                   <StatCard
@@ -344,11 +343,11 @@ export default function Dashboard() {
                   <IncidentBarChart
                     title=""
                     data={[
-                      { name: 'SEV1', count: metrics?.incidentsBySeverity.critical || 0 },
-                      { name: 'SEV2', count: metrics?.incidentsBySeverity.high || 0 },
-                      { name: 'SEV3', count: metrics?.incidentsBySeverity.medium || 0 },
-                      { name: 'SEV4', count: metrics?.incidentsBySeverity.low || 0 },
-                      { name: 'SEV5', count: 8 },
+                      { name: 'SEV1', count: metrics?.incidentsBySeverity[1] || 0 },
+                      { name: 'SEV2', count: metrics?.incidentsBySeverity[2] || 0 },
+                      { name: 'SEV3', count: metrics?.incidentsBySeverity[3] || 0 },
+                      { name: 'SEV4', count: metrics?.incidentsBySeverity[4] || 0 },
+                      { name: 'SEV5', count: metrics?.incidentsBySeverity[5] || 8 },
                     ]}
                     xAxisKey="name"
                     dataKeys={[

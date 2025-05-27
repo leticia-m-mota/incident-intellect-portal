@@ -70,11 +70,11 @@ export default function Analytics() {
   
   // Prepare data for charts
   const severityData = metrics ? [
-    { name: 'Critical (SEV1)', value: metrics.incidentsBySeverity.critical, color: '#E53E3E' },
-    { name: 'High (SEV2)', value: metrics.incidentsBySeverity.high, color: '#DD6B20' },
-    { name: 'Medium (SEV3)', value: metrics.incidentsBySeverity.medium, color: '#D69E2E' },
-    { name: 'Low (SEV4)', value: metrics.incidentsBySeverity.low, color: '#38A169' },
-    { name: 'Info (SEV5)', value: 8, color: '#4299E1' },
+    { name: 'Critical (SEV1)', value: metrics.incidentsBySeverity[1], color: '#E53E3E' },
+    { name: 'High (SEV2)', value: metrics.incidentsBySeverity[2], color: '#DD6B20' },
+    { name: 'Medium (SEV3)', value: metrics.incidentsBySeverity[3], color: '#D69E2E' },
+    { name: 'Low (SEV4)', value: metrics.incidentsBySeverity[4], color: '#38A169' },
+    { name: 'Info (SEV5)', value: metrics.incidentsBySeverity[5] || 8, color: '#4299E1' },
   ] : [];
   
   const statusData = metrics ? [
@@ -297,7 +297,6 @@ export default function Analytics() {
     { service: 'CDN', score: 91 },
   ];
 
-  // Alerts by team and service
   const alertsByTeam = [
     { team: 'Platform', count: 38 },
     { team: 'Frontend', count: 22 },
@@ -569,11 +568,11 @@ export default function Analytics() {
                     title=""
                     legendPosition="top"
                     data={[
-                      { name: 'SEV1', count: metrics?.incidentsBySeverity.critical || 0 },
-                      { name: 'SEV2', count: metrics?.incidentsBySeverity.high || 0 },
-                      { name: 'SEV3', count: metrics?.incidentsBySeverity.medium || 0 },
-                      { name: 'SEV4', count: metrics?.incidentsBySeverity.low || 0 },
-                      { name: 'SEV5', count: 8 },
+                      { name: 'SEV1', count: metrics?.incidentsBySeverity[1] || 0 },
+                      { name: 'SEV2', count: metrics?.incidentsBySeverity[2] || 0 },
+                      { name: 'SEV3', count: metrics?.incidentsBySeverity[3] || 0 },
+                      { name: 'SEV4', count: metrics?.incidentsBySeverity[4] || 0 },
+                      { name: 'SEV5', count: metrics?.incidentsBySeverity[5] || 8 },
                     ]}
                     xAxisKey="name"
                     dataKeys={[
