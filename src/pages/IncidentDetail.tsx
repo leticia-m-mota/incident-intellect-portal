@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -8,7 +9,11 @@ import {
   ListTodo,
   CheckCircle2,
   Users,
-  Send
+  Send,
+  Clock,
+  FileText,
+  ExternalLink,
+  Server
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { IncidentSeverityBadge } from '@/components/incidents/IncidentSeverityBadge';
@@ -399,22 +404,241 @@ export default function IncidentDetail() {
             </>
           ) : (
             /* Resolved Incident View */
-            <Tabs defaultValue="metrics">
+            <Tabs defaultValue="details">
               <TabsList>
-                <TabsTrigger value="metrics">Impact Metrics</TabsTrigger>
+                <TabsTrigger value="details">Incident Details</TabsTrigger>
                 <TabsTrigger value="timeline">Timeline</TabsTrigger>
                 <TabsTrigger value="learnings">Learnings</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="metrics" className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Incident Impact</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <IncidentImpactMetrics incident={incident} />
-                  </CardContent>
-                </Card>
+              <TabsContent value="details" className="mt-4">
+                <div className="space-y-6">
+                  {/* Participants */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <Users size={18} className="text-purple" />
+                        <span>Participants</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Reporter:</label>
+                          <p className="mt-1">Sarah Johnson</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Point:</label>
+                          <p className="mt-1">Alex Chen</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Comms:</label>
+                          <p className="mt-1">Michael Brown</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Coordinator:</label>
+                          <p className="mt-1">Emily Davis</p>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Others:</label>
+                        <p className="mt-1">David Wilson, Lisa Garcia, James Taylor</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Teams Involved */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Teams Involved</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Affected Squads - BUs:</label>
+                        <p className="mt-1">Platform Engineering - Infrastructure, Data Engineering - Analytics</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Responsible Squad:</label>
+                        <p className="mt-1">{incident.ownerTeam}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Enhanced Timeline */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <Clock size={18} className="text-purple" />
+                        <span>Incident Timeline</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Started Date Time:</label>
+                          <p className="mt-1">{format(new Date(incident.createdAt), 'MMM d, yyyy h:mm a')}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Reported Date Time:</label>
+                          <p className="mt-1">{format(new Date(incident.createdAt), 'MMM d, yyyy h:mm a')}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Acknowledge Date Time:</label>
+                          <p className="mt-1">
+                            {incident.metrics?.timeToAcknowledge 
+                              ? format(new Date(new Date(incident.createdAt).getTime() + incident.metrics.timeToAcknowledge * 60000), 'MMM d, yyyy h:mm a')
+                              : 'Not available'
+                            }
+                          </p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Mitigation Date Time:</label>
+                          <p className="mt-1">
+                            {incident.resolvedAt 
+                              ? format(new Date(new Date(incident.resolvedAt).getTime() - 30 * 60000), 'MMM d, yyyy h:mm a')
+                              : 'Not available'
+                            }
+                          </p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Postmortem Date Time:</label>
+                          <p className="mt-1">
+                            {incident.resolvedAt 
+                              ? format(new Date(new Date(incident.resolvedAt).getTime() + 24 * 60 * 60000), 'MMM d, yyyy h:mm a')
+                              : 'Pending'
+                            }
+                          </p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Remediation Finish Date Time:</label>
+                          <p className="mt-1">
+                            {incident.resolvedAt 
+                              ? format(new Date(incident.resolvedAt), 'MMM d, yyyy h:mm a')
+                              : 'Not available'
+                            }
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Documentation */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <FileText size={18} className="text-purple" />
+                        <span>Documentation</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Incident log filled:</label>
+                          <p className="mt-1 text-severity-low font-medium">Yes</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Incident log link:</label>
+                          <p className="mt-1">
+                            <Button variant="link" size="sm" className="p-0 h-auto">
+                              <ExternalLink size={14} className="mr-1" />
+                              View Incident Log
+                            </Button>
+                          </p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Postmortem log filled:</label>
+                          <p className="mt-1 text-severity-low font-medium">Yes</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Postmortem link:</label>
+                          <p className="mt-1">
+                            <Button variant="link" size="sm" className="p-0 h-auto">
+                              <ExternalLink size={14} className="mr-1" />
+                              View Postmortem
+                            </Button>
+                          </p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Slack thread:</label>
+                          <p className="mt-1">
+                            <Button variant="link" size="sm" className="p-0 h-auto">
+                              <MessageSquare size={14} className="mr-1" />
+                              #incident-{incident.id.toLowerCase()}
+                            </Button>
+                          </p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Alerts related to this incident:</label>
+                          <p className="mt-1">
+                            <Button variant="link" size="sm" className="p-0 h-auto">
+                              <AlertCircle size={14} className="mr-1" />
+                              View Related Alerts
+                            </Button>
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Systems */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <Server size={18} className="text-purple" />
+                        <span>Systems</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Service name:</label>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {incident.impactedSystems.map(system => (
+                            <span key={system} className="px-2 py-1 bg-secondary text-secondary-foreground text-sm rounded-full">
+                              {system}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Incident Impact and Metrics */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Incident Impact and Metrics</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Time to acknowledge:</label>
+                          <p className="mt-1 text-lg font-semibold">
+                            {incident.metrics?.timeToAcknowledge ? `${incident.metrics.timeToAcknowledge} minutes` : 'Not available'}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Time to resolve:</label>
+                          <p className="mt-1 text-lg font-semibold">
+                            {incident.metrics?.timeToResolve ? `${incident.metrics.timeToResolve} minutes` : 'Not available'}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Affected Users:</label>
+                          <p className="mt-1 text-lg font-semibold">
+                            {incident.metrics?.affectedUsers ? incident.metrics.affectedUsers.toLocaleString() : 'Not available'}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Affected business flows:</label>
+                          <p className="mt-1">Authentication, Payment Processing, User Registration</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-muted-foreground">Shards impacted:</label>
+                          <p className="mt-1">shard-001, shard-003, shard-007</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </TabsContent>
               
               <TabsContent value="timeline" className="mt-4">
@@ -534,59 +758,6 @@ export default function IncidentDetail() {
             </>
           ) : (
             <>
-              {/* Impact Summary for Resolved Incidents */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Impact Summary</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-sm font-medium text-muted-foreground">Severity</h3>
-                      <div className="flex items-center mt-1">
-                        <IncidentSeverityBadge severity={incident.severity} />
-                        <span className="ml-2">{
-                          incident.severity === 'critical' ? 'Critical Impact' :
-                          incident.severity === 'high' ? 'Major Impact' :
-                          incident.severity === 'medium' ? 'Moderate Impact' : 'Minor Impact'
-                        }</span>
-                      </div>
-                    </div>
-                    
-                    {incident.metrics && (
-                      <>
-                        <div>
-                          <h3 className="text-sm font-medium text-muted-foreground">Incident Duration</h3>
-                          <p className="mt-1">
-                            {incident.metrics.timeToResolve ? 
-                              `${Math.floor(incident.metrics.timeToResolve / 60)}h ${incident.metrics.timeToResolve % 60}m` : 
-                              'Not available'}
-                          </p>
-                        </div>
-                        
-                        {incident.metrics.affectedUsers && (
-                          <div>
-                            <h3 className="text-sm font-medium text-muted-foreground">User Impact</h3>
-                            <p className="mt-1">{incident.metrics.affectedUsers.toLocaleString()} affected users</p>
-                          </div>
-                        )}
-                      </>
-                    )}
-                    
-                    <div>
-                      <h3 className="text-sm font-medium text-muted-foreground">Impacted Systems</h3>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {incident.impactedSystems.map(system => (
-                          <span key={system} className="px-2 py-0.5 bg-secondary text-xs rounded-full">
-                            {system}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            
               {/* Similar Incidents */}
               <Card>
                 <CardHeader>
