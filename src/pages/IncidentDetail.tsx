@@ -13,7 +13,9 @@ import {
   Clock,
   FileText,
   ExternalLink,
-  Server
+  Server,
+  Activity,
+  BookOpen
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { IncidentSeverityBadge } from '@/components/incidents/IncidentSeverityBadge';
@@ -217,7 +219,7 @@ export default function IncidentDetail() {
         </Button>
       </div>
       
-      {/* Full-width incident header */}
+      {/* Incident header */}
       <Card className="mb-6">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between mb-4">
@@ -253,392 +255,458 @@ export default function IncidentDetail() {
 
       {isActiveIncident ? (
         // Active incident layout
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            {/* Team assignment */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Team Assignment</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Communications Lead</label>
-                    <Select value={commAssignee} onValueChange={setCommAssignee}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Assign communications lead" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="user1">Sarah Johnson</SelectItem>
-                        <SelectItem value="user2">Alex Chen</SelectItem>
-                        <SelectItem value="user3">Michael Brown</SelectItem>
-                      </SelectContent>
-                    </Select>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview">Overview & Actions</TabsTrigger>
+            <TabsTrigger value="timeline">Timeline</TabsTrigger>
+            <TabsTrigger value="resources">Resources & AI</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users size={18} />
+                    Team Assignment
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Communications Lead</label>
+                      <Select value={commAssignee} onValueChange={setCommAssignee}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Assign communications lead" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="user1">Sarah Johnson</SelectItem>
+                          <SelectItem value="user2">Alex Chen</SelectItem>
+                          <SelectItem value="user3">Michael Brown</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Resolution Lead</label>
+                      <Select value={pointAssignee} onValueChange={setPointAssignee}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Assign resolution lead" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="user1">Sarah Johnson</SelectItem>
+                          <SelectItem value="user2">Alex Chen</SelectItem>
+                          <SelectItem value="user3">Michael Brown</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Incident Management</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-3 mb-6">
+                    <Button variant="default" size="sm" className="gap-2">
+                      <ListTodo size={16} />
+                      Update Status
+                    </Button>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <MessageSquare size={16} />
+                      Slack Thread
+                    </Button>
+                    <Button variant="default" size="sm" className="gap-2 bg-green-600 hover:bg-green-700">
+                      <CheckCircle2 size={16} />
+                      Resolve Incident
+                    </Button>
                   </div>
                   
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Resolution Lead</label>
-                    <Select value={pointAssignee} onValueChange={setPointAssignee}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Assign resolution lead" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="user1">Sarah Johnson</SelectItem>
-                        <SelectItem value="user2">Alex Chen</SelectItem>
-                        <SelectItem value="user3">Michael Brown</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <h3 className="text-sm font-medium mb-3">Send Update</h3>
+                    <Textarea 
+                      placeholder="Enter incident update or comment..."
+                      className="mb-3"
+                      rows={3}
+                      value={updateMessage}
+                      onChange={(e) => setUpdateMessage(e.target.value)}
+                    />
+                    <div className="flex gap-2 justify-between">
+                      <Select value={updateType} onValueChange={setUpdateType}>
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="update">Status Update</SelectItem>
+                          <SelectItem value="action">Action Taken</SelectItem>
+                          <SelectItem value="notification">Notification</SelectItem>
+                          <SelectItem value="resolution">Resolution</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button 
+                        onClick={handleAddUpdate}
+                        disabled={!updateMessage.trim() || !pointAssignee}
+                        className="gap-2"
+                      >
+                        <Send size={16} />
+                        Send Update
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
-            {/* Action panel */}
+          <TabsContent value="timeline">
             <Card>
               <CardHeader>
-                <CardTitle>Incident Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-3 mb-6">
-                  <Button variant="default" size="sm" className="gap-2">
-                    <ListTodo size={16} />
-                    Update Status
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <MessageSquare size={16} />
-                    Slack Thread
-                  </Button>
-                  <Button variant="default" size="sm" className="gap-2 bg-green-600 hover:bg-green-700">
-                    <CheckCircle2 size={16} />
-                    Resolve Incident
-                  </Button>
-                </div>
-                
-                <div>
-                  <h3 className="text-sm font-medium mb-3">Send Update</h3>
-                  <Textarea 
-                    placeholder="Enter incident update or comment..."
-                    className="mb-3"
-                    rows={3}
-                    value={updateMessage}
-                    onChange={(e) => setUpdateMessage(e.target.value)}
-                  />
-                  <div className="flex gap-2 justify-between">
-                    <Select value={updateType} onValueChange={setUpdateType}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="update">Status Update</SelectItem>
-                        <SelectItem value="action">Action Taken</SelectItem>
-                        <SelectItem value="notification">Notification</SelectItem>
-                        <SelectItem value="resolution">Resolution</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button 
-                      onClick={handleAddUpdate}
-                      disabled={!updateMessage.trim() || !pointAssignee}
-                      className="gap-2"
-                    >
-                      <Send size={16} />
-                      Send Update
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Timeline */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Incident Timeline</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock size={18} />
+                  Incident Timeline
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <IncidentTimeline events={incident.timeline} />
               </CardContent>
             </Card>
-          </div>
-          
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>AI Assistance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AiAssistant />
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Related Knowledge</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {relatedArticles && relatedArticles.length > 0 ? (
-                  <div className="space-y-3">
-                    {relatedArticles.map(article => (
-                      <div key={article.id} className="border rounded-lg p-3 hover:bg-muted/30">
-                        <h3 className="font-medium mb-1">{article.title}</h3>
-                        <p className="text-xs text-muted-foreground mb-1 line-clamp-2">
-                          {article.content}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground text-center py-4">
-                    No knowledge articles found related to this incident
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      ) : (
-        // Resolved incident layout - reorganized and optimized
-        <div className="space-y-6">
-          {/* First row: Impact Metrics and Documentation */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Incident Impact & Metrics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Time to acknowledge:</label>
-                    <p className="mt-1 text-2xl font-bold text-blue-600">
-                      {incident.metrics?.timeToAcknowledge ? `${incident.metrics.timeToAcknowledge} min` : 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Time to resolve:</label>
-                    <p className="mt-1 text-2xl font-bold text-green-600">
-                      {incident.metrics?.timeToResolve ? `${incident.metrics.timeToResolve} min` : 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Affected Users:</label>
-                    <p className="mt-1 text-2xl font-bold text-red-600">
-                      {incident.metrics?.affectedUsers ? incident.metrics.affectedUsers.toLocaleString() : 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Service Downtime:</label>
-                    <p className="mt-1 text-2xl font-bold text-orange-600">
-                      {incident.metrics?.serviceDowntime ? `${incident.metrics.serviceDowntime} min` : 'N/A'}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="border-t pt-4 space-y-3">
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Affected business flows:</label>
-                    <p className="mt-1">Authentication, Payment Processing, User Registration</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Shards impacted:</label>
-                    <p className="mt-1">shard-001, shard-003, shard-007</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Service names:</label>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {incident.impactedSystems.map(system => (
-                        <span key={system} className="px-2 py-1 bg-secondary text-secondary-foreground text-sm rounded-full">
-                          {system}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText size={18} />
-                  Documentation & Links
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Incident log filled:</label>
-                    <p className="mt-1 text-green-600 font-medium">Yes</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Postmortem log filled:</label>
-                    <p className="mt-1 text-green-600 font-medium">Yes</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <Button variant="link" size="sm" className="p-0 h-auto justify-start">
-                    <ExternalLink size={14} className="mr-2" />
-                    View Incident Log
-                  </Button>
-                  <Button variant="link" size="sm" className="p-0 h-auto justify-start">
-                    <ExternalLink size={14} className="mr-2" />
-                    View Postmortem
-                  </Button>
-                  <Button variant="link" size="sm" className="p-0 h-auto justify-start">
-                    <MessageSquare size={14} className="mr-2" />
-                    #incident-{incident.id.toLowerCase()}
-                  </Button>
-                  <Button variant="link" size="sm" className="p-0 h-auto justify-start">
-                    <AlertCircle size={14} className="mr-2" />
-                    View Related Alerts
-                  </Button>
-                </div>
-
-                {similarIncidents && similarIncidents.length > 0 && (
-                  <div className="border-t pt-4">
-                    <h4 className="text-sm font-medium mb-3">Similar Incidents</h4>
+          <TabsContent value="resources" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>AI Assistance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <AiAssistant />
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Related Knowledge</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {relatedArticles && relatedArticles.length > 0 ? (
                     <div className="space-y-3">
-                      {similarIncidents.map(inc => (
-                        <SimplifiedIncidentCard key={inc.id} incident={inc} />
+                      {relatedArticles.map(article => (
+                        <div key={article.id} className="border rounded-lg p-3 hover:bg-muted/30">
+                          <h3 className="font-medium mb-1">{article.title}</h3>
+                          <p className="text-xs text-muted-foreground mb-1 line-clamp-2">
+                            {article.content}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-center py-4">
+                      No knowledge articles found related to this incident
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+      ) : (
+        // Resolved incident layout with tabs
+        <Tabs defaultValue="impact" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="impact" className="flex items-center gap-2">
+              <Activity size={16} />
+              Impact & Systems
+            </TabsTrigger>
+            <TabsTrigger value="timeline" className="flex items-center gap-2">
+              <Clock size={16} />
+              Timeline
+            </TabsTrigger>
+            <TabsTrigger value="team" className="flex items-center gap-2">
+              <Users size={16} />
+              Team & Documentation
+            </TabsTrigger>
+            <TabsTrigger value="learnings" className="flex items-center gap-2">
+              <BookOpen size={16} />
+              Learnings
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="impact" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Impact Metrics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-6 mb-6">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Time to acknowledge:</label>
+                      <p className="mt-1 text-2xl font-bold text-blue-600">
+                        {incident.metrics?.timeToAcknowledge ? `${incident.metrics.timeToAcknowledge} min` : 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Time to resolve:</label>
+                      <p className="mt-1 text-2xl font-bold text-green-600">
+                        {incident.metrics?.timeToResolve ? `${incident.metrics.timeToResolve} min` : 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Affected Users:</label>
+                      <p className="mt-1 text-2xl font-bold text-red-600">
+                        {incident.metrics?.affectedUsers ? incident.metrics.affectedUsers.toLocaleString() : 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Service Downtime:</label>
+                      <p className="mt-1 text-2xl font-bold text-orange-600">
+                        {incident.metrics?.serviceDowntime ? `${incident.metrics.serviceDowntime} min` : 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t pt-4 space-y-3">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Affected business flows:</label>
+                      <p className="mt-1">Authentication, Payment Processing, User Registration</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Shards impacted:</label>
+                      <p className="mt-1">shard-001, shard-003, shard-007</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Server size={18} />
+                    Service Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Impacted Services:</label>
+                    <div className="mt-2 space-y-2">
+                      {incident.impactedSystems.map(system => (
+                        <div key={system} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                          <span className="font-medium">{system}</span>
+                          <span className="text-sm text-red-600">Down</span>
+                        </div>
                       ))}
                     </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Second row: Participants & Teams, and Timeline */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users size={18} />
-                  Participants & Teams
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-3">Participants</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium">Reporter:</span>
-                      <span className="text-sm">Sarah Johnson</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium">Point:</span>
-                      <span className="text-sm">Alex Chen</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium">Comms:</span>
-                      <span className="text-sm">Michael Brown</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium">Coordinator:</span>
-                      <span className="text-sm">Emily Davis</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium">Others:</span>
-                      <span className="text-sm">David Wilson, Lisa Garcia, James Taylor</span>
+                  
+                  <div className="border-t pt-4">
+                    <label className="text-sm font-medium text-muted-foreground">Service Dependencies:</label>
+                    <div className="mt-2 space-y-1">
+                      <p className="text-sm">• Database Cluster (Primary)</p>
+                      <p className="text-sm">• Redis Cache Layer</p>
+                      <p className="text-sm">• External Payment Gateway</p>
+                      <p className="text-sm">• CDN Services</p>
                     </div>
                   </div>
-                </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-3">Teams Involved</h4>
-                  <div className="space-y-2">
-                    <div>
-                      <span className="text-sm font-medium">Affected Squads - BUs:</span>
-                      <p className="text-sm text-muted-foreground">Platform Engineering - Infrastructure, Data Engineering - Analytics</p>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium">Responsible Squad:</span>
-                      <p className="text-sm text-muted-foreground">{incident.ownerTeam}</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
+          <TabsContent value="timeline">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock size={18} />
-                  Timeline Overview
+                  Detailed Timeline
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 gap-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium">Started:</span>
-                    <span className="text-sm">{format(new Date(incident.createdAt), 'MMM d, yyyy h:mm a')}</span>
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-sm font-medium">Started:</span>
+                      <p className="text-sm text-muted-foreground">{format(new Date(incident.createdAt), 'MMM d, yyyy h:mm a')}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium">Reported:</span>
+                      <p className="text-sm text-muted-foreground">{format(new Date(incident.createdAt), 'MMM d, yyyy h:mm a')}</p>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium">Reported:</span>
-                    <span className="text-sm">{format(new Date(incident.createdAt), 'MMM d, yyyy h:mm a')}</span>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-sm font-medium">Acknowledged:</span>
+                      <p className="text-sm text-muted-foreground">
+                        {incident.metrics?.timeToAcknowledge 
+                          ? format(new Date(new Date(incident.createdAt).getTime() + incident.metrics.timeToAcknowledge * 60000), 'MMM d, yyyy h:mm a')
+                          : 'Not available'
+                        }
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium">Mitigated:</span>
+                      <p className="text-sm text-muted-foreground">
+                        {incident.resolvedAt 
+                          ? format(new Date(new Date(incident.resolvedAt).getTime() - 30 * 60000), 'MMM d, yyyy h:mm a')
+                          : 'Not available'
+                        }
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium">Acknowledged:</span>
-                    <span className="text-sm">
-                      {incident.metrics?.timeToAcknowledge 
-                        ? format(new Date(new Date(incident.createdAt).getTime() + incident.metrics.timeToAcknowledge * 60000), 'MMM d, yyyy h:mm a')
-                        : 'Not available'
-                      }
-                    </span>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-sm font-medium">Resolved:</span>
+                      <p className="text-sm text-muted-foreground">
+                        {incident.resolvedAt 
+                          ? format(new Date(incident.resolvedAt), 'MMM d, yyyy h:mm a')
+                          : 'Not available'
+                        }
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium">Postmortem:</span>
+                      <p className="text-sm text-muted-foreground">
+                        {incident.resolvedAt 
+                          ? format(new Date(new Date(incident.resolvedAt).getTime() + 24 * 60 * 60000), 'MMM d, yyyy h:mm a')
+                          : 'Pending'
+                        }
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium">Mitigated:</span>
-                    <span className="text-sm">
-                      {incident.resolvedAt 
-                        ? format(new Date(new Date(incident.resolvedAt).getTime() - 30 * 60000), 'MMM d, yyyy h:mm a')
-                        : 'Not available'
-                      }
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium">Resolved:</span>
-                    <span className="text-sm">
-                      {incident.resolvedAt 
-                        ? format(new Date(incident.resolvedAt), 'MMM d, yyyy h:mm a')
-                        : 'Not available'
-                      }
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium">Postmortem:</span>
-                    <span className="text-sm">
-                      {incident.resolvedAt 
-                        ? format(new Date(new Date(incident.resolvedAt).getTime() + 24 * 60 * 60000), 'MMM d, yyyy h:mm a')
-                        : 'Pending'
-                      }
-                    </span>
-                  </div>
+                </div>
+                
+                <div className="border-t pt-6">
+                  <IncidentTimeline events={incident.timeline} />
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </TabsContent>
 
-          {/* Third row: Detailed Timeline */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Detailed Timeline</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <IncidentTimeline events={incident.timeline} />
-            </CardContent>
-          </Card>
+          <TabsContent value="team" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users size={18} />
+                    Participants & Teams
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-3">Participants</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium">Reporter:</span>
+                        <span className="text-sm">Sarah Johnson</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium">Point:</span>
+                        <span className="text-sm">Alex Chen</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium">Comms:</span>
+                        <span className="text-sm">Michael Brown</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium">Coordinator:</span>
+                        <span className="text-sm">Emily Davis</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium">Others:</span>
+                        <span className="text-sm">David Wilson, Lisa Garcia, James Taylor</span>
+                      </div>
+                    </div>
+                  </div>
 
-          {/* Fourth row: Learnings section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Incident Learnings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <IncidentLearningsSection 
-                learnings={incident.learnings} 
-                onAddLearning={handleAddLearning}
-              />
-            </CardContent>
-          </Card>
-        </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-3">Teams Involved</h4>
+                    <div className="space-y-2">
+                      <div>
+                        <span className="text-sm font-medium">Affected Squads - BUs:</span>
+                        <p className="text-sm text-muted-foreground">Platform Engineering - Infrastructure, Data Engineering - Analytics</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium">Responsible Squad:</span>
+                        <p className="text-sm text-muted-foreground">{incident.ownerTeam}</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText size={18} />
+                    Documentation & Links
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Incident log filled:</label>
+                      <p className="mt-1 text-green-600 font-medium">Yes</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Postmortem log filled:</label>
+                      <p className="mt-1 text-green-600 font-medium">Yes</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <Button variant="link" size="sm" className="p-0 h-auto justify-start">
+                      <ExternalLink size={14} className="mr-2" />
+                      View Incident Log
+                    </Button>
+                    <Button variant="link" size="sm" className="p-0 h-auto justify-start">
+                      <ExternalLink size={14} className="mr-2" />
+                      View Postmortem
+                    </Button>
+                    <Button variant="link" size="sm" className="p-0 h-auto justify-start">
+                      <MessageSquare size={14} className="mr-2" />
+                      #incident-{incident.id.toLowerCase()}
+                    </Button>
+                    <Button variant="link" size="sm" className="p-0 h-auto justify-start">
+                      <AlertCircle size={14} className="mr-2" />
+                      View Related Alerts
+                    </Button>
+                  </div>
+
+                  {similarIncidents && similarIncidents.length > 0 && (
+                    <div className="border-t pt-4">
+                      <h4 className="text-sm font-medium mb-3">Similar Incidents</h4>
+                      <div className="space-y-3">
+                        {similarIncidents.map(inc => (
+                          <SimplifiedIncidentCard key={inc.id} incident={inc} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="learnings">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen size={18} />
+                  Incident Learnings
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <IncidentLearningsSection 
+                  learnings={incident.learnings} 
+                  onAddLearning={handleAddLearning}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       )}
     </MainLayout>
   );
