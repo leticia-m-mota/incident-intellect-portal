@@ -395,204 +395,13 @@ export default function IncidentDetail() {
           </div>
         </div>
       ) : (
-        // Resolved incident layout - full width with organized sections
+        // Resolved incident layout - reorganized and optimized
         <div className="space-y-6">
-          {/* Main content in a 3-column layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Column 1: People & Teams */}
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users size={18} />
-                    Participants
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Reporter:</label>
-                    <p className="mt-1">Sarah Johnson</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Point:</label>
-                    <p className="mt-1">Alex Chen</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Comms:</label>
-                    <p className="mt-1">Michael Brown</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Coordinator:</label>
-                    <p className="mt-1">Emily Davis</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Others:</label>
-                    <p className="mt-1">David Wilson, Lisa Garcia, James Taylor</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Teams Involved</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Affected Squads - BUs:</label>
-                    <p className="mt-1">Platform Engineering - Infrastructure, Data Engineering - Analytics</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Responsible Squad:</label>
-                    <p className="mt-1">{incident.ownerTeam}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Column 2: Timeline & Systems */}
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Clock size={18} />
-                    Timeline
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Started Date Time:</label>
-                    <p className="mt-1">{format(new Date(incident.createdAt), 'MMM d, yyyy h:mm a')}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Reported Date Time:</label>
-                    <p className="mt-1">{format(new Date(incident.createdAt), 'MMM d, yyyy h:mm a')}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Acknowledge Date Time:</label>
-                    <p className="mt-1">
-                      {incident.metrics?.timeToAcknowledge 
-                        ? format(new Date(new Date(incident.createdAt).getTime() + incident.metrics.timeToAcknowledge * 60000), 'MMM d, yyyy h:mm a')
-                        : 'Not available'
-                      }
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Mitigation Date Time:</label>
-                    <p className="mt-1">
-                      {incident.resolvedAt 
-                        ? format(new Date(new Date(incident.resolvedAt).getTime() - 30 * 60000), 'MMM d, yyyy h:mm a')
-                        : 'Not available'
-                      }
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Postmortem Date Time:</label>
-                    <p className="mt-1">
-                      {incident.resolvedAt 
-                        ? format(new Date(new Date(incident.resolvedAt).getTime() + 24 * 60 * 60000), 'MMM d, yyyy h:mm a')
-                        : 'Pending'
-                      }
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Remediation Finish Date Time:</label>
-                    <p className="mt-1">
-                      {incident.resolvedAt 
-                        ? format(new Date(incident.resolvedAt), 'MMM d, yyyy h:mm a')
-                        : 'Not available'
-                      }
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Server size={18} />
-                    Systems
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Service name:</label>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {incident.impactedSystems.map(system => (
-                        <span key={system} className="px-2 py-1 bg-secondary text-secondary-foreground text-sm rounded-full">
-                          {system}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Column 3: Documentation & Links */}
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText size={18} />
-                    Documentation
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Incident log filled:</label>
-                      <p className="mt-1 text-green-600 font-medium">Yes</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Postmortem log filled:</label>
-                      <p className="mt-1 text-green-600 font-medium">Yes</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <Button variant="link" size="sm" className="p-0 h-auto justify-start">
-                      <ExternalLink size={14} className="mr-2" />
-                      View Incident Log
-                    </Button>
-                    <Button variant="link" size="sm" className="p-0 h-auto justify-start">
-                      <ExternalLink size={14} className="mr-2" />
-                      View Postmortem
-                    </Button>
-                    <Button variant="link" size="sm" className="p-0 h-auto justify-start">
-                      <MessageSquare size={14} className="mr-2" />
-                      #incident-{incident.id.toLowerCase()}
-                    </Button>
-                    <Button variant="link" size="sm" className="p-0 h-auto justify-start">
-                      <AlertCircle size={14} className="mr-2" />
-                      View Related Alerts
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {similarIncidents && similarIncidents.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Similar Incidents</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {similarIncidents.map(inc => (
-                        <SimplifiedIncidentCard key={inc.id} incident={inc} />
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
-
-          {/* Full-width sections */}
+          {/* First row: Impact Metrics and Documentation */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Impact Metrics */}
             <Card>
               <CardHeader>
-                <CardTitle>Incident Impact and Metrics</CardTitle>
+                <CardTitle>Incident Impact & Metrics</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-6 mb-6">
@@ -631,22 +440,193 @@ export default function IncidentDetail() {
                     <label className="text-sm font-medium text-muted-foreground">Shards impacted:</label>
                     <p className="mt-1">shard-001, shard-003, shard-007</p>
                   </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Service names:</label>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {incident.impactedSystems.map(system => (
+                        <span key={system} className="px-2 py-1 bg-secondary text-secondary-foreground text-sm rounded-full">
+                          {system}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Timeline Detail */}
             <Card>
               <CardHeader>
-                <CardTitle>Detailed Timeline</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText size={18} />
+                  Documentation & Links
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <IncidentTimeline events={incident.timeline} />
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Incident log filled:</label>
+                    <p className="mt-1 text-green-600 font-medium">Yes</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Postmortem log filled:</label>
+                    <p className="mt-1 text-green-600 font-medium">Yes</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <Button variant="link" size="sm" className="p-0 h-auto justify-start">
+                    <ExternalLink size={14} className="mr-2" />
+                    View Incident Log
+                  </Button>
+                  <Button variant="link" size="sm" className="p-0 h-auto justify-start">
+                    <ExternalLink size={14} className="mr-2" />
+                    View Postmortem
+                  </Button>
+                  <Button variant="link" size="sm" className="p-0 h-auto justify-start">
+                    <MessageSquare size={14} className="mr-2" />
+                    #incident-{incident.id.toLowerCase()}
+                  </Button>
+                  <Button variant="link" size="sm" className="p-0 h-auto justify-start">
+                    <AlertCircle size={14} className="mr-2" />
+                    View Related Alerts
+                  </Button>
+                </div>
+
+                {similarIncidents && similarIncidents.length > 0 && (
+                  <div className="border-t pt-4">
+                    <h4 className="text-sm font-medium mb-3">Similar Incidents</h4>
+                    <div className="space-y-3">
+                      {similarIncidents.map(inc => (
+                        <SimplifiedIncidentCard key={inc.id} incident={inc} />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
 
-          {/* Learnings section - full width */}
+          {/* Second row: Participants & Teams, and Timeline */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users size={18} />
+                  Participants & Teams
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-3">Participants</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">Reporter:</span>
+                      <span className="text-sm">Sarah Johnson</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">Point:</span>
+                      <span className="text-sm">Alex Chen</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">Comms:</span>
+                      <span className="text-sm">Michael Brown</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">Coordinator:</span>
+                      <span className="text-sm">Emily Davis</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">Others:</span>
+                      <span className="text-sm">David Wilson, Lisa Garcia, James Taylor</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-3">Teams Involved</h4>
+                  <div className="space-y-2">
+                    <div>
+                      <span className="text-sm font-medium">Affected Squads - BUs:</span>
+                      <p className="text-sm text-muted-foreground">Platform Engineering - Infrastructure, Data Engineering - Analytics</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium">Responsible Squad:</span>
+                      <p className="text-sm text-muted-foreground">{incident.ownerTeam}</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock size={18} />
+                  Timeline Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium">Started:</span>
+                    <span className="text-sm">{format(new Date(incident.createdAt), 'MMM d, yyyy h:mm a')}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium">Reported:</span>
+                    <span className="text-sm">{format(new Date(incident.createdAt), 'MMM d, yyyy h:mm a')}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium">Acknowledged:</span>
+                    <span className="text-sm">
+                      {incident.metrics?.timeToAcknowledge 
+                        ? format(new Date(new Date(incident.createdAt).getTime() + incident.metrics.timeToAcknowledge * 60000), 'MMM d, yyyy h:mm a')
+                        : 'Not available'
+                      }
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium">Mitigated:</span>
+                    <span className="text-sm">
+                      {incident.resolvedAt 
+                        ? format(new Date(new Date(incident.resolvedAt).getTime() - 30 * 60000), 'MMM d, yyyy h:mm a')
+                        : 'Not available'
+                      }
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium">Resolved:</span>
+                    <span className="text-sm">
+                      {incident.resolvedAt 
+                        ? format(new Date(incident.resolvedAt), 'MMM d, yyyy h:mm a')
+                        : 'Not available'
+                      }
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium">Postmortem:</span>
+                    <span className="text-sm">
+                      {incident.resolvedAt 
+                        ? format(new Date(new Date(incident.resolvedAt).getTime() + 24 * 60 * 60000), 'MMM d, yyyy h:mm a')
+                        : 'Pending'
+                      }
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Third row: Detailed Timeline */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Detailed Timeline</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <IncidentTimeline events={incident.timeline} />
+            </CardContent>
+          </Card>
+
+          {/* Fourth row: Learnings section */}
           <Card>
             <CardHeader>
               <CardTitle>Incident Learnings</CardTitle>
