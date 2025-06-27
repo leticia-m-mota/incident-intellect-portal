@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -53,15 +52,15 @@ export default function Incidents() {
     queryFn: mockDataService.getMetrics,
   });
   
-  // Handle search execution
-  const handleSearch = () => {
+  // Handle search and filter execution
+  const handleApplyFilters = () => {
     setCurrentSearchTerm(searchTerm);
   };
   
   // Handle enter key press in search input
   const handleSearchKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSearch();
+      handleApplyFilters();
     }
   };
   
@@ -267,13 +266,14 @@ export default function Incidents() {
         </div>
       </div>
       
-      {/* Search and Filter Bar */}
-      <div className="mb-6">
-        <div className="flex flex-col lg:flex-row gap-4">
-          {/* Search Section */}
-          <div className="flex-1">
-            <div className="flex gap-2">
-              <div className="relative flex-1">
+      {/* Search and Filter Section */}
+      <Card className="mb-6">
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            {/* Search by Title */}
+            <div>
+              <label className="text-sm font-medium mb-2 block">Search Incidents by Title</label>
+              <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search incidents by title, ID, or tags..."
@@ -283,78 +283,50 @@ export default function Incidents() {
                   className="pl-9"
                 />
               </div>
-              <Button onClick={handleSearch} variant="default">
-                Search
-              </Button>
             </div>
-          </div>
-          
-          {/* Quick Filters */}
-          <div className="flex gap-2 flex-wrap">
-            <Select
-              value={filterStatus}
-              onValueChange={setFilterStatus}
-            >
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="open">Open</SelectItem>
-                <SelectItem value="investigating">Investigating</SelectItem>
-                <SelectItem value="identified">Identified</SelectItem>
-                <SelectItem value="monitoring">Monitoring</SelectItem>
-                <SelectItem value="resolved">Resolved</SelectItem>
-                <SelectItem value="closed">Closed</SelectItem>
-              </SelectContent>
-            </Select>
             
-            <Select
-              value={filterSeverity}
-              onValueChange={setFilterSeverity}
-            >
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Severity" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Severities</SelectItem>
-                <SelectItem value="1">Severity 1 (Critical)</SelectItem>
-                <SelectItem value="2">Severity 2 (High)</SelectItem>
-                <SelectItem value="3">Severity 3 (Medium)</SelectItem>
-                <SelectItem value="4">Severity 4 (Low)</SelectItem>
-                <SelectItem value="5">Severity 5 (Minimal)</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Button 
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <span>More Filters</span>
-              {getActiveFiltersCount() > 2 && (
-                <Badge variant="secondary" className="ml-1">{getActiveFiltersCount() - 2}</Badge>
-              )}
-            </Button>
-          </div>
-        </div>
-      </div>
-      
-      {showFilters && (
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="flex flex-col md:flex-row items-start justify-between gap-4 mb-4">
-              <h3 className="text-lg font-semibold">Advanced Filters</h3>
-              <Button variant="ghost" onClick={resetFilters} size="sm">Reset All</Button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Quick Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">Incident Type</label>
-                <Select
-                  value={filterType}
-                  onValueChange={setFilterType}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select incident type" />
+                <label className="text-sm font-medium mb-2 block">Status</label>
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="open">Open</SelectItem>
+                    <SelectItem value="investigating">Investigating</SelectItem>
+                    <SelectItem value="identified">Identified</SelectItem>
+                    <SelectItem value="monitoring">Monitoring</SelectItem>
+                    <SelectItem value="resolved">Resolved</SelectItem>
+                    <SelectItem value="closed">Closed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium mb-2 block">Severity</label>
+                <Select value={filterSeverity} onValueChange={setFilterSeverity}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Severities" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Severities</SelectItem>
+                    <SelectItem value="1">Severity 1 (Critical)</SelectItem>
+                    <SelectItem value="2">Severity 2 (High)</SelectItem>
+                    <SelectItem value="3">Severity 3 (Medium)</SelectItem>
+                    <SelectItem value="4">Severity 4 (Low)</SelectItem>
+                    <SelectItem value="5">Severity 5 (Minimal)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium mb-2 block">Type</label>
+                <Select value={filterType} onValueChange={setFilterType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Types" />
                   </SelectTrigger>
                   <SelectContent>
                     {incidentTypes.map(option => (
@@ -365,30 +337,10 @@ export default function Incidents() {
               </div>
               
               <div>
-                <label className="text-sm font-medium mb-2 block">Business Unit</label>
-                <Select
-                  value={filterBusinessUnit}
-                  onValueChange={setFilterBusinessUnit}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select business unit" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {businessUnits.map(option => (
-                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
                 <label className="text-sm font-medium mb-2 block">Team</label>
-                <Select
-                  value={filterTeam}
-                  onValueChange={setFilterTeam}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select team" />
+                <Select value={filterTeam} onValueChange={setFilterTeam}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Teams" />
                   </SelectTrigger>
                   <SelectContent>
                     {teams.map(option => (
@@ -398,11 +350,22 @@ export default function Incidents() {
                 </Select>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            
+            {/* Action Buttons */}
+            <div className="flex justify-between items-center pt-2">
+              <Button variant="outline" onClick={resetFilters} size="sm">
+                Clear All Filters
+              </Button>
+              <Button onClick={handleApplyFilters} size="sm" className="bg-blue-600 hover:bg-blue-700">
+                <Search size={16} className="mr-2" />
+                Apply Search & Filters
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
       
-      {/* Stats Overview - Simplified */}
+      {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <StatCard
           title="Active Incidents"
