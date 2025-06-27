@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -266,6 +267,22 @@ export default function Incidents() {
         </div>
       </div>
       
+      {/* Stats Overview - Moved to top */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <StatCard
+          title="Active Incidents"
+          value={activeIncidents}
+        />
+        <StatCard
+          title="Critical Incidents"
+          value={criticalIncidents}
+        />
+        <StatCard
+          title="Resolved This Month"
+          value={resolvedThisMonth}
+        />
+      </div>
+      
       {/* Search and Filter Section */}
       <Card className="mb-6">
         <CardContent className="p-6">
@@ -364,22 +381,6 @@ export default function Incidents() {
           </div>
         </CardContent>
       </Card>
-      
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <StatCard
-          title="Active Incidents"
-          value={activeIncidents}
-        />
-        <StatCard
-          title="Critical Incidents"
-          value={criticalIncidents}
-        />
-        <StatCard
-          title="Resolved This Month"
-          value={resolvedThisMonth}
-        />
-      </div>
       
       {/* Main Incidents Display */}
       <div className="mt-6">
