@@ -116,7 +116,7 @@ export default function Incidents() {
   ];
 
   // Reset filters
-  const resetFilters => () => {
+  const resetFilters = () => {
     setSearchTerm('');
     setCurrentSearchTerm('');
     setFilterSeverity('all');
