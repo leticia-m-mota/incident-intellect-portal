@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -29,6 +30,7 @@ export default function Incidents() {
   
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentSearchTerm, setCurrentSearchTerm] = useState(''); // For actual filtering
   const [filterSeverity, setFilterSeverity] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
@@ -50,6 +52,18 @@ export default function Incidents() {
     queryKey: ['metrics'],
     queryFn: mockDataService.getMetrics,
   });
+  
+  // Handle search execution
+  const handleSearch = () => {
+    setCurrentSearchTerm(searchTerm);
+  };
+  
+  // Handle enter key press in search input
+  const handleSearchKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
   
   // Calculate incident stats
   const activeIncidents = incidents?.filter(
@@ -102,8 +116,9 @@ export default function Incidents() {
   ];
 
   // Reset filters
-  const resetFilters = () => {
+  const resetFilters => () => {
     setSearchTerm('');
+    setCurrentSearchTerm('');
     setFilterSeverity('all');
     setFilterStatus('all');
     setFilterType('all');
@@ -130,7 +145,7 @@ export default function Incidents() {
   // Get active filters count
   const getActiveFiltersCount = () => {
     let count = 0;
-    if (searchTerm.trim() !== '') count++;
+    if (currentSearchTerm.trim() !== '') count++;
     if (filterSeverity !== 'all') count++;
     if (filterStatus !== 'all') count++;
     if (filterType !== 'all') count++;
@@ -140,13 +155,13 @@ export default function Incidents() {
     return count;
   };
 
-  // Filter incidents
+  // Filter incidents - now using currentSearchTerm for actual filtering
   const filteredIncidents = incidents?.filter(incident => {
-    const matchesSearch = searchTerm === '' || 
-      incident.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      incident.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      incident.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      incident.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = currentSearchTerm === '' || 
+      incident.id.toLowerCase().includes(currentSearchTerm.toLowerCase()) ||
+      incident.title.toLowerCase().includes(currentSearchTerm.toLowerCase()) ||
+      incident.description.toLowerCase().includes(currentSearchTerm.toLowerCase()) ||
+      incident.tags.some(tag => tag.toLowerCase().includes(currentSearchTerm.toLowerCase()));
       
     const matchesSeverity = filterSeverity === 'all' || incident.severity.toString() === filterSeverity;
     const matchesStatus = filterStatus === 'all' || incident.status === filterStatus;
@@ -222,16 +237,6 @@ export default function Incidents() {
                 </PopoverContent>
               </Popover>
             )}
-            
-            <Button 
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <span>Filters</span>
-              {getActiveFiltersCount() > 0 && (
-                <Badge variant="secondary" className="ml-1">{getActiveFiltersCount()}</Badge>
-              )}
-            </Button>
           </div>
 
           <div className="border rounded-md flex">
@@ -262,19 +267,29 @@ export default function Incidents() {
         </div>
       </div>
       
-      {/* Unified Search and Filter Bar */}
+      {/* Search and Filter Bar */}
       <div className="mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search incidents by ID, title, or tags..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
-            />
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Search Section */}
+          <div className="flex-1">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search incidents by title, ID, or tags..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyPress={handleSearchKeyPress}
+                  className="pl-9"
+                />
+              </div>
+              <Button onClick={handleSearch} variant="default">
+                Search
+              </Button>
+            </div>
           </div>
           
+          {/* Quick Filters */}
           <div className="flex gap-2 flex-wrap">
             <Select
               value={filterStatus}
@@ -310,6 +325,16 @@ export default function Incidents() {
                 <SelectItem value="5">Severity 5 (Minimal)</SelectItem>
               </SelectContent>
             </Select>
+            
+            <Button 
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <span>More Filters</span>
+              {getActiveFiltersCount() > 2 && (
+                <Badge variant="secondary" className="ml-1">{getActiveFiltersCount() - 2}</Badge>
+              )}
+            </Button>
           </div>
         </div>
       </div>
