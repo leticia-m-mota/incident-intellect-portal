@@ -1,11 +1,11 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
   List, 
   LayoutGrid, 
   Plus,
-  Search
+  Search,
+  CalendarIcon
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -196,49 +196,6 @@ export default function Incidents() {
         />
         
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Select
-              value={timeframe}
-              onValueChange={setTimeframe}
-            >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Timeframe" />
-              </SelectTrigger>
-              <SelectContent>
-                {timeFrames.map(option => (
-                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            {timeframe === 'custom' && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline">
-                    {formatDateRange()}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                  <Calendar
-                    initialFocus
-                    mode="range"
-                    defaultMonth={dateRange.from}
-                    selected={{
-                      from: dateRange.from,
-                      to: dateRange.to,
-                    }}
-                    onSelect={(range) => {
-                      if (range?.from && range?.to) {
-                        setDateRange({ from: range.from, to: range.to });
-                      }
-                    }}
-                    numberOfMonths={2}
-                  />
-                </PopoverContent>
-              </Popover>
-            )}
-          </div>
-
           <div className="border rounded-md flex">
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
@@ -302,8 +259,52 @@ export default function Incidents() {
               </div>
             </div>
             
-            {/* Quick Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Quick Filters - Now including date filter */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Date Range</label>
+                <div className="flex flex-col gap-2">
+                  <Select value={timeframe} onValueChange={setTimeframe}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Timeframe" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {timeFrames.map(option => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  {timeframe === 'custom' && (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formatDateRange()}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="end">
+                        <Calendar
+                          initialFocus
+                          mode="range"
+                          defaultMonth={dateRange.from}
+                          selected={{
+                            from: dateRange.from,
+                            to: dateRange.to,
+                          }}
+                          onSelect={(range) => {
+                            if (range?.from && range?.to) {
+                              setDateRange({ from: range.from, to: range.to });
+                            }
+                          }}
+                          numberOfMonths={2}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                </div>
+              </div>
+              
               <div>
                 <label className="text-sm font-medium mb-2 block">Status</label>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
