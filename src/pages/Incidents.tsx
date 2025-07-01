@@ -23,19 +23,20 @@ import { format, compareDesc } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 export default function Incidents() {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   
-  // Search and filter states
+  // Search and filter states - updated to arrays for multi-select
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentSearchTerm, setCurrentSearchTerm] = useState(''); // For actual filtering
-  const [filterSeverity, setFilterSeverity] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [filterType, setFilterType] = useState<string>('all');
-  const [filterBusinessUnit, setFilterBusinessUnit] = useState<string>('all');
-  const [filterTeam, setFilterTeam] = useState<string>('all');
+  const [currentSearchTerm, setCurrentSearchTerm] = useState('');
+  const [filterSeverity, setFilterSeverity] = useState<string[]>([]);
+  const [filterStatus, setFilterStatus] = useState<string[]>([]);
+  const [filterType, setFilterType] = useState<string[]>([]);
+  const [filterTeam, setFilterTeam] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [timeframe, setTimeframe] = useState('month');
   const [dateRange, setDateRange] = useState({
@@ -86,26 +87,35 @@ export default function Incidents() {
 
   // Sample data for filters
   const incidentTypes = [
-    { label: 'All Types', value: 'all' },
-    { label: 'Dataset', value: 'dataset' },
-    { label: 'Data Platform', value: 'data-platform' },
-    { label: 'Data Model', value: 'data-model' },
-    { label: 'Fraud', value: 'fraud' },
-    { label: 'Engineering', value: 'engineering' },
-    { label: 'Security', value: 'security' },
+    { id: 'dataset', name: 'Dataset' },
+    { id: 'data-platform', name: 'Data Platform' },
+    { id: 'data-model', name: 'Data Model' },
+    { id: 'fraud', name: 'Fraud' },
+    { id: 'engineering', name: 'Engineering' },
+    { id: 'security', name: 'Security' },
   ];
   
-  const businessUnits = [
-    { label: 'All Business Units', value: 'all' },
-    { label: 'Business Unit 1', value: 'bu1' },
-    { label: 'Business Unit 2', value: 'bu2' },
+  const severityOptions = [
+    { id: '1', name: 'Severity 1 (Critical)' },
+    { id: '2', name: 'Severity 2 (High)' },
+    { id: '3', name: 'Severity 3 (Medium)' },
+    { id: '4', name: 'Severity 4 (Low)' },
+    { id: '5', name: 'Severity 5 (Minimal)' },
+  ];
+  
+  const statusOptions = [
+    { id: 'open', name: 'Open' },
+    { id: 'investigating', name: 'Investigating' },
+    { id: 'identified', name: 'Identified' },
+    { id: 'monitoring', name: 'Monitoring' },
+    { id: 'resolved', name: 'Resolved' },
+    { id: 'closed', name: 'Closed' },
   ];
   
   const teams = [
-    { label: 'All Teams', value: 'all' },
-    { label: 'BU1 - Team 1', value: 'bu1-team1' },
-    { label: 'BU1 - Team 2', value: 'bu1-team2' },
-    { label: 'BU2 - Team 4', value: 'bu2-team4' },
+    { id: 'bu1-team1', name: 'BU1 - Team 1' },
+    { id: 'bu1-team2', name: 'BU1 - Team 2' },
+    { id: 'bu2-team4', name: 'BU2 - Team 4' },
   ];
   
   const timeFrames = [
@@ -119,11 +129,10 @@ export default function Incidents() {
   const resetFilters = () => {
     setSearchTerm('');
     setCurrentSearchTerm('');
-    setFilterSeverity('all');
-    setFilterStatus('all');
-    setFilterType('all');
-    setFilterBusinessUnit('all');
-    setFilterTeam('all');
+    setFilterSeverity([]);
+    setFilterStatus([]);
+    setFilterType([]);
+    setFilterTeam([]);
     setTimeframe('month');
     setDateRange({
       from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
@@ -146,16 +155,15 @@ export default function Incidents() {
   const getActiveFiltersCount = () => {
     let count = 0;
     if (currentSearchTerm.trim() !== '') count++;
-    if (filterSeverity !== 'all') count++;
-    if (filterStatus !== 'all') count++;
-    if (filterType !== 'all') count++;
-    if (filterBusinessUnit !== 'all') count++;
-    if (filterTeam !== 'all') count++;
+    if (filterSeverity.length > 0) count++;
+    if (filterStatus.length > 0) count++;
+    if (filterType.length > 0) count++;
+    if (filterTeam.length > 0) count++;
     if (timeframe !== 'month') count++;
     return count;
   };
 
-  // Filter incidents - now using currentSearchTerm for actual filtering
+  // Filter incidents - updated for multi-select arrays
   const filteredIncidents = incidents?.filter(incident => {
     const matchesSearch = currentSearchTerm === '' || 
       incident.id.toLowerCase().includes(currentSearchTerm.toLowerCase()) ||
@@ -163,29 +171,32 @@ export default function Incidents() {
       incident.description.toLowerCase().includes(currentSearchTerm.toLowerCase()) ||
       incident.tags.some(tag => tag.toLowerCase().includes(currentSearchTerm.toLowerCase()));
       
-    const matchesSeverity = filterSeverity === 'all' || incident.severity.toString() === filterSeverity;
-    const matchesStatus = filterStatus === 'all' || incident.status === filterStatus;
+    const matchesSeverity = filterSeverity.length === 0 || filterSeverity.includes(incident.severity.toString());
+    const matchesStatus = filterStatus.length === 0 || filterStatus.includes(incident.status);
+    const matchesType = filterType.length === 0 || 
+                        incident.tags.some(tag => filterType.some(type => tag.toLowerCase() === type.toLowerCase()));
+    const matchesTeam = filterTeam.length === 0 || filterTeam.some(team => incident.ownerTeam.includes(team));
     
-    // Instead of incident.type, check for tag with the filtered type
-    const matchesType = filterType === 'all' || 
-                        incident.tags.some(tag => tag.toLowerCase() === filterType.toLowerCase());
-    
-    // Instead of incident.businessUnit, we'll assume that the business unit might be in ownerTeam or tags
-    const matchesBusinessUnit = filterBusinessUnit === 'all' || 
-                                incident.ownerTeam.toLowerCase().includes(filterBusinessUnit.toLowerCase()) ||
-                                incident.tags.some(tag => tag.toLowerCase().includes(filterBusinessUnit.toLowerCase()));
-    
-    const matchesTeam = filterTeam === 'all' || incident.ownerTeam === filterTeam;
-    
-    return matchesSearch && matchesSeverity && matchesStatus && matchesType && 
-           matchesBusinessUnit && matchesTeam;
+    return matchesSearch && matchesSeverity && matchesStatus && matchesType && matchesTeam;
   }).sort((a, b) => {
-    // Sort by severity first (1 is most critical), then by creation date
     if (a.severity !== b.severity) {
       return a.severity - b.severity;
     }
     return compareDesc(new Date(a.createdAt), new Date(b.createdAt));
   }) || [];
+
+  // Helper function to handle multi-select changes
+  const handleMultiSelectChange = (
+    value: string, 
+    currentValues: string[], 
+    setter: (values: string[]) => void
+  ) => {
+    if (currentValues.includes(value)) {
+      setter(currentValues.filter(v => v !== value));
+    } else {
+      setter([...currentValues, value]);
+    }
+  };
   
   return (
     <MainLayout>
@@ -259,7 +270,7 @@ export default function Incidents() {
               </div>
             </div>
             
-            {/* Quick Filters - Now including date filter */}
+            {/* Quick Filters */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">Date Range</label>
@@ -306,66 +317,111 @@ export default function Incidents() {
               </div>
               
               <div>
-                <label className="text-sm font-medium mb-2 block">Status</label>
-                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Statuses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="open">Open</SelectItem>
-                    <SelectItem value="investigating">Investigating</SelectItem>
-                    <SelectItem value="identified">Identified</SelectItem>
-                    <SelectItem value="monitoring">Monitoring</SelectItem>
-                    <SelectItem value="resolved">Resolved</SelectItem>
-                    <SelectItem value="closed">Closed</SelectItem>
-                  </SelectContent>
-                </Select>
+                <label className="text-sm font-medium mb-2 block">Status ({filterStatus.length} selected)</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start">
+                      {filterStatus.length === 0 ? "All Statuses" : `${filterStatus.length} selected`}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56">
+                    <div className="space-y-2">
+                      {statusOptions.map((option) => (
+                        <div key={option.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`status-${option.id}`}
+                            checked={filterStatus.includes(option.id)}
+                            onCheckedChange={() => handleMultiSelectChange(option.id, filterStatus, setFilterStatus)}
+                          />
+                          <Label htmlFor={`status-${option.id}`} className="text-sm font-normal">
+                            {option.name}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
               
               <div>
-                <label className="text-sm font-medium mb-2 block">Severity</label>
-                <Select value={filterSeverity} onValueChange={setFilterSeverity}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Severities" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Severities</SelectItem>
-                    <SelectItem value="1">Severity 1 (Critical)</SelectItem>
-                    <SelectItem value="2">Severity 2 (High)</SelectItem>
-                    <SelectItem value="3">Severity 3 (Medium)</SelectItem>
-                    <SelectItem value="4">Severity 4 (Low)</SelectItem>
-                    <SelectItem value="5">Severity 5 (Minimal)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <label className="text-sm font-medium mb-2 block">Severity ({filterSeverity.length} selected)</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start">
+                      {filterSeverity.length === 0 ? "All Severities" : `${filterSeverity.length} selected`}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56">
+                    <div className="space-y-2">
+                      {severityOptions.map((option) => (
+                        <div key={option.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`severity-${option.id}`}
+                            checked={filterSeverity.includes(option.id)}
+                            onCheckedChange={() => handleMultiSelectChange(option.id, filterSeverity, setFilterSeverity)}
+                          />
+                          <Label htmlFor={`severity-${option.id}`} className="text-sm font-normal">
+                            {option.name}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
               
               <div>
-                <label className="text-sm font-medium mb-2 block">Type</label>
-                <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Types" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {incidentTypes.map(option => (
-                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <label className="text-sm font-medium mb-2 block">Type ({filterType.length} selected)</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start">
+                      {filterType.length === 0 ? "All Types" : `${filterType.length} selected`}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56">
+                    <div className="space-y-2">
+                      {incidentTypes.map((option) => (
+                        <div key={option.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`type-${option.id}`}
+                            checked={filterType.includes(option.id)}
+                            onCheckedChange={() => handleMultiSelectChange(option.id, filterType, setFilterType)}
+                          />
+                          <Label htmlFor={`type-${option.id}`} className="text-sm font-normal">
+                            {option.name}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
               
               <div>
-                <label className="text-sm font-medium mb-2 block">Team</label>
-                <Select value={filterTeam} onValueChange={setFilterTeam}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Teams" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {teams.map(option => (
-                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <label className="text-sm font-medium mb-2 block">Team ({filterTeam.length} selected)</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start">
+                      {filterTeam.length === 0 ? "All Teams" : `${filterTeam.length} selected`}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56">
+                    <div className="space-y-2">
+                      {teams.map((option) => (
+                        <div key={option.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`team-${option.id}`}
+                            checked={filterTeam.includes(option.id)}
+                            onCheckedChange={() => handleMultiSelectChange(option.id, filterTeam, setFilterTeam)}
+                          />
+                          <Label htmlFor={`team-${option.id}`} className="text-sm font-normal">
+                            {option.name}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             
